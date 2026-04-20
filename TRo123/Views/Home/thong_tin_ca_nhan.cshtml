@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+}
+@model TRo123.Models.CapNhatTaiKhoanViewModel
+
+<div class="member-layout">
+    @await Html.PartialAsync("_thanh_vien_sidebar")
+    <section class="member-content">
+        <div class="form-page full-width">
+            <h1>Cập nhật thông tin cá nhân</h1>
+            <form class="post-form narrow-form mt-4" method="post" asp-action="Profile">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">Mã thành viên</label>
+                    <div class="col-md-7">
+                        <input class="form-control" asp-for="MaTaiKhoan" readonly />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">Số điện thoại</label>
+                    <div class="col-md-7">
+                        <input class="form-control" asp-for="SoDienThoai" readonly />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">Tên hiển thị</label>
+                    <div class="col-md-7">
+                        <input class="form-control" asp-for="HoTen" />
+                        <span asp-validation-for="HoTen" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">Mật khẩu</label>
+                    <div class="col-md-7">
+                        <input type="password" class="form-control" asp-for="MatKhauMoi" placeholder="Đổi mật khẩu (bỏ trống nếu không đổi)" />
+                        <span asp-validation-for="MatKhauMoi" class="text-danger small"></span>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary px-5">Lưu &amp; Cập nhật</button>
+            </form>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

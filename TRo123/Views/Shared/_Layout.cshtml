@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TRo123</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/TRo123.styles.css" asp-append-version="true" />
+</head>
+<body class="site-body">
+    <header class="site-header">
+        <div class="container site-topbar">
+            <a class="site-logo" asp-controller="Home" asp-action="Index">TRo123</a>
+            <div class="site-top-actions">
+                @{
+                    var maTaiKhoan = Context.Session.GetString("MaTaiKhoan");
+                }
+                @if (string.IsNullOrWhiteSpace(maTaiKhoan))
+                {
+                    <a class="site-link" asp-controller="Home" asp-action="Login">Đăng nhập</a>
+                    <a class="site-link" asp-controller="Home" asp-action="Register">Đăng ký</a>
+                }
+                else
+                {
+                    <a class="site-link" asp-controller="Home" asp-action="Profile">Tài khoản</a>
+                    <a class="site-link" asp-controller="Home" asp-action="Logout">Đăng xuất</a>
+                }
+                <a class="btn btn-warning btn-sm fw-semibold" asp-controller="Home" asp-action="CreatePost">Đăng tin mới</a>
+            </div>
+        </div>
+        <nav class="site-nav">
+            <div class="container">
+                <ul>
+                    <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                    <li><a asp-controller="Home" asp-action="Listings">Cho thuê phòng trọ</a></li>
+                    <li><a asp-controller="Home" asp-action="Listings">Nhà cho thuê</a></li>
+                    <li><a asp-controller="Home" asp-action="Listings">Căn hộ cho thuê</a></li>
+                    <li><a asp-controller="Home" asp-action="Listings">Tìm người ở ghép</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container py-4">
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
+        <div class="container d-flex flex-wrap justify-content-between gap-2">
+            <span>&copy; 2026 TRo123 - Nền tảng đăng tin nhà trọ.</span>
+            <a asp-controller="Home" asp-action="Privacy">Chính sách bảo mật</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,26 @@
+<aside class="member-sidebar">
+    @{
+        var maTaiKhoan = Context.Session.GetString("MaTaiKhoan");
+        var vaiTro = Context.Session.GetString("VaiTro");
+    }
+    <div class="member-card">
+        <div class="avatar-circle">U</div>
+        <h4>@(string.IsNullOrWhiteSpace(maTaiKhoan) ? "Khách" : maTaiKhoan)</h4>
+        <small>@(string.IsNullOrWhiteSpace(vaiTro) ? "" : vaiTro)</small>
+        @if (!string.IsNullOrWhiteSpace(maTaiKhoan))
+        {
+            <p>Mã thành viên: @maTaiKhoan</p>
+            <a class="btn btn-sm btn-outline-secondary" asp-controller="Home" asp-action="Logout">Đăng xuất</a>
+        }
+    </div>
+    <nav class="member-menu">
+        @if (string.Equals(vaiTro, "QuanTri", StringComparison.OrdinalIgnoreCase))
+        {
+            <a asp-controller="Home" asp-action="AccountManagement">Quản lý tài khoản</a>
+        }
+        <a asp-controller="Home" asp-action="CreatePost">Đăng tin mới</a>
+        <a asp-controller="Home" asp-action="EditPost">Chỉnh sửa tin đăng</a>
+        <a asp-controller="Home" asp-action="Profile">Sửa thông tin cá nhân</a>
+        <a asp-controller="Home" asp-action="ReportPost">Báo cáo bài viết</a>
+    </nav>
+</aside>

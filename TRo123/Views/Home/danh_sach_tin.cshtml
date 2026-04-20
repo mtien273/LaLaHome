@@ -1,0 +1,58 @@
+@model List<TRo123.Models.PhongTroItemViewModel>
+@{
+    ViewData["Title"] = "Danh sách tin";
+}
+
+<div class="page-heading">
+    <h1>Cho thuê phòng trọ</h1>
+    <p>Tổng hợp tin đăng mới nhất, đã được kiểm duyệt thông tin cơ bản.</p>
+</div>
+
+<div class="filter-bar">
+    <select><option>Tỉnh/Thành phố</option><option>TP.HCM</option><option>Hà Nội</option></select>
+    <select><option>Quận/Huyện</option><option>Quận 1</option><option>Quận 7</option></select>
+    <select><option>Mức giá</option><option>Dưới 3 triệu</option><option>3 - 5 triệu</option></select>
+    <button class="btn btn-danger">Lọc tin</button>
+</div>
+
+<div class="content-grid mt-3">
+    <div class="left-col">
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
+        @if (Model.Count == 0)
+        {
+            <div class="side-card">
+                <p>Chưa có dữ liệu phòng trong SQL Server.</p>
+            </div>
+        }
+        @foreach (var item in Model)
+        {
+            <article class="post-card">
+                <img src="@(string.IsNullOrWhiteSpace(item.DuongDanAnh) ? "https://picsum.photos/seed/list-default/220/150" : item.DuongDanAnh)" alt="tin @item.MaPhong" />
+                <div>
+                    <h3><a asp-controller="Home" asp-action="Detail" asp-route-id="@item.MaPhong">@item.TenPhong - mã #@item.MaPhong</a></h3>
+                    <div class="post-meta">
+                        <span class="price">@item.GiaPhong.ToString("N0") đ/tháng</span>
+                        <span>@item.DienTich m2</span>
+                        <span>@item.DiaChiDayDu</span>
+                    </div>
+                    <p>Liên hệ: @item.SoDienThoai</p>
+                </div>
+            </article>
+        }
+    </div>
+    <aside class="right-col">
+        <div class="side-card">
+            <h4>Xem theo khoảng giá</h4>
+            <ul>
+                <li><a href="#">Dưới 2 triệu</a></li>
+                <li><a href="#">2 - 3 triệu</a></li>
+                <li><a href="#">3 - 5 triệu</a></li>
+                <li><a href="#">Trên 5 triệu</a></li>
+            </ul>
+        </div>
+    </aside>
+</div>

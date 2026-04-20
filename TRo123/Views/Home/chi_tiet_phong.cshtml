@@ -1,0 +1,78 @@
+@model TRo123.Models.ChiTietPhongViewModel
+@{
+    ViewData["Title"] = "Chi tiết tin";
+    var hinh = string.IsNullOrWhiteSpace(Model.DuongDanAnh)
+        ? "https://picsum.photos/seed/detail-default/900/360"
+        : Model.DuongDanAnh;
+}
+
+<div class="detail-layout">
+    <section class="detail-main">
+        <div class="detail-gallery">
+            <button class="gallery-btn">&lt;</button>
+            <img class="detail-cover" src="@hinh" alt="chi tiet tin @Model.MaPhong" />
+            <button class="gallery-btn">&gt;</button>
+        </div>
+        <div class="detail-box">
+            <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                <h1 class="detail-title">@Model.TenPhong</h1>
+                <a class="btn btn-outline-primary btn-sm" asp-controller="Home" asp-action="ReportPost" asp-route-id="@Model.MaPhong">Báo cáo</a>
+            </div>
+            <p class="mb-1">Chuyên mục: <a asp-controller="Home" asp-action="Listings">@Model.LoaiPhong</a></p>
+            <p class="mb-2">Địa chỉ: @Model.DiaChiDayDu</p>
+            <div class="post-meta mb-0">
+                <span class="price">@Model.GiaPhong.ToString("N0") đ/tháng</span>
+                <span>@Model.DienTich m2</span>
+                <span>@(Model.NgayDang?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</span>
+                <span>#@Model.MaPhong</span>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h4>Thông tin mô tả</h4>
+            <p>
+                Phòng được lấy từ dữ liệu SQL Server (`tblPhong`, `tblDiaChi`, `tblLoaiPhong`).
+                Bạn có thể bổ sung thêm trường mô tả trong DB nếu cần hiển thị nội dung dài hơn.
+            </p>
+        </div>
+        <div class="detail-box">
+            <h4>Đặc điểm tin đăng</h4>
+            <div class="detail-table">
+                <div><span>Mã tin:</span><strong>#@Model.MaPhong</strong></div>
+                <div><span>Loại phòng:</span><strong>@Model.LoaiPhong</strong></div>
+                <div><span>Ngày đăng:</span><strong>@(Model.NgayDang?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</strong></div>
+                <div><span>Giá điện:</span><strong>@Model.GiaDien.ToString("N0") đ/kwh</strong></div>
+                <div><span>Giá nước:</span><strong>@Model.GiaNuoc.ToString("N0") đ/m3</strong></div>
+            </div>
+        </div>
+        <div class="detail-box">
+            <h4>Thông tin liên hệ</h4>
+            <div class="detail-table">
+                <div><span>Liên hệ:</span><strong>Chủ phòng #@Model.MaPhong</strong></div>
+                <div><span>Điện thoại:</span><strong>@Model.SoDienThoai</strong></div>
+                <div><span>Zalo:</span><strong>@Model.SoDienThoai</strong></div>
+            </div>
+        </div>
+    </section>
+
+    <aside class="detail-sidebar">
+        <div class="contact-highlight">
+            <div class="contact-avatar">☺</div>
+            <h4>CHỦ PHÒNG</h4>
+            <p>- Đang hoạt động</p>
+            <button class="btn btn-success w-100">@Model.SoDienThoai</button>
+            <button class="btn btn-outline-secondary w-100 mt-2">Nhắn Zalo</button>
+            <button class="btn btn-outline-secondary w-100 mt-2">Yêu thích</button>
+        </div>
+        <div class="side-card">
+            <h4>Tin liên quan</h4>
+            <a class="mini-post" asp-controller="Home" asp-action="Listings">
+                <img src="@hinh" alt="related @Model.MaPhong" />
+                <div>
+                    <strong>@Model.TenPhong</strong>
+                    <small>@Model.GiaPhong.ToString("N0") đ/tháng</small>
+                </div>
+            </a>
+        </div>
+    </aside>
+</div>

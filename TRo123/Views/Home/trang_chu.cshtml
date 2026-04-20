@@ -1,0 +1,83 @@
+@model List<TRo123.Models.PhongTroItemViewModel>
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<section class="hero-banner">
+    <h1>Tìm phòng trọ nhanh, đúng nhu cầu, giá hợp lý</h1>
+    <p>Khám phá hàng nghìn tin đăng phòng trọ, nhà nguyên căn và căn hộ cho thuê trên toàn quốc.</p>
+    <form class="search-box">
+        <select>
+            <option>Khu vực</option>
+            <option>TP.HCM</option>
+            <option>Hà Nội</option>
+            <option>Đà Nẵng</option>
+        </select>
+        <select>
+            <option>Mức giá</option>
+            <option>Dưới 2 triệu</option>
+            <option>2 - 4 triệu</option>
+            <option>4 - 7 triệu</option>
+        </select>
+        <select>
+            <option>Diện tích</option>
+            <option>Dưới 20m2</option>
+            <option>20m2 - 30m2</option>
+            <option>Trên 30m2</option>
+        </select>
+        <a class="btn btn-danger" asp-controller="Home" asp-action="Listings">Tìm kiếm</a>
+    </form>
+</section>
+
+<section class="content-grid mt-4">
+    <div class="left-col">
+        <div class="section-title">
+            <h2>Tin đăng nổi bật</h2>
+            <a asp-controller="Home" asp-action="Listings">Xem tất cả</a>
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="side-card">
+                <p>Chưa có dữ liệu phòng từ SQL Server. Hãy import `DB_LaLaHome.sql` và thêm dữ liệu mẫu.</p>
+            </div>
+        }
+        @foreach (var item in Model)
+        {
+            <article class="post-card">
+                <img src="@(string.IsNullOrWhiteSpace(item.DuongDanAnh) ? "https://picsum.photos/seed/tro-default/220/150" : item.DuongDanAnh)" alt="phong @item.MaPhong" />
+                <div>
+                    <h3>
+                        <a asp-controller="Home" asp-action="Detail" asp-route-id="@item.MaPhong">@item.TenPhong - mã #@item.MaPhong</a>
+                    </h3>
+                    <div class="post-meta">
+                        <span class="price">@item.GiaPhong.ToString("N0") đ/tháng</span>
+                        <span>@item.DienTich m2</span>
+                        <span>@item.DiaChiDayDu</span>
+                    </div>
+                    <p>Liên hệ: @item.SoDienThoai</p>
+                </div>
+            </article>
+        }
+    </div>
+
+    <aside class="right-col">
+        <div class="side-card">
+            <h4>Danh mục cho thuê</h4>
+            <ul>
+                <li><a asp-controller="Home" asp-action="Listings">Cho thuê phòng trọ</a></li>
+                <li><a asp-controller="Home" asp-action="Listings">Nhà nguyên căn</a></li>
+                <li><a asp-controller="Home" asp-action="Listings">Cho thuê căn hộ</a></li>
+                <li><a asp-controller="Home" asp-action="Listings">Tìm người ở ghép</a></li>
+            </ul>
+        </div>
+        <div class="side-card">
+            <h4>Tin mới đăng</h4>
+            <ul class="compact-list">
+                <li><a asp-controller="Home" asp-action="Detail" asp-route-id="12">Phòng tiện nghi gần ĐH Bách Khoa</a></li>
+                <li><a asp-controller="Home" asp-action="Detail" asp-route-id="13">Cho thuê căn hộ mini full nội thất</a></li>
+                <li><a asp-controller="Home" asp-action="Detail" asp-route-id="14">Phòng trọ giá tốt khu vực Cầu Giấy</a></li>
+            </ul>
+        </div>
+    </aside>
+</section>

@@ -1,0 +1,27 @@
+using TRo123.Models;
+
+namespace TRo123.Services;
+
+public interface ILaLaHomeRepository
+{
+    Task<List<PhongTroItemViewModel>> LayDanhSachPhongAsync(int soLuong = 30);
+    Task<ChiTietPhongViewModel?> LayChiTietPhongAsync(string maPhong);
+    Task<string> TaoTaiKhoanAsync(DangKyTaiKhoanViewModel model);
+    Task<bool> KiemTraDangNhapAsync(DangNhapViewModel model);
+    Task<TaiKhoanDto?> LayTaiKhoanTheoDangNhapAsync(DangNhapViewModel model);
+    Task<TaiKhoanDto?> LayTaiKhoanTheoMaAsync(string maTaiKhoan);
+    Task CapNhatThongTinTaiKhoanAsync(CapNhatTaiKhoanViewModel model);
+    Task<List<TaiKhoanDto>> LayDanhSachTaiKhoanAsync();
+
+    Task<List<LoaiPhongDto>> LayLoaiPhongAsync();
+    Task<List<TinhThanhPhoDto>> LayTinhThanhPhoAsync();
+    Task<List<QuanHuyenDto>> LayQuanHuyenAsync(string maTinhThanhPho);
+    Task<List<XaPhuongDto>> LayXaPhuongAsync(string maQuanHuyen);
+
+    Task<string> TaoTinPhongAsync(TaoTinPhongViewModel model);
+    Task<TaoTinPhongViewModel?> LayTinPhongDeSuaAsync(string maPhong);
+    Task CapNhatTinPhongAsync(TaoTinPhongViewModel model);
+
+    Task<string> UploadAnhAsync(IFormFile file, IWebHostEnvironment env);
+    Task LuuAnhVaoDbAsync(string maPhong, string maTaiKhoan, string duongDan);
+}
