@@ -5,6 +5,7 @@ namespace TRo123.Services;
 public interface ILaLaHomeRepository
 {
     Task<List<PhongTroItemViewModel>> LayDanhSachPhongAsync(int soLuong = 30);
+    Task<List<PhongTroItemViewModel>> TimKiemPhongAsync(TimKiemPhongViewModel boLoc, int soLuong = 200);
     Task<ChiTietPhongViewModel?> LayChiTietPhongAsync(string maPhong);
     Task<ChiTietPhongViewModel?> LayChiTietPhongChoPhepAsync(string maPhong, string? maTaiKhoan, bool laQuanTri);
     Task<string> TaoTaiKhoanAsync(DangKyTaiKhoanViewModel model); 

@@ -1,6 +1,9 @@
 @model List<TRo123.Models.PhongTroItemViewModel>
 @{
     ViewData["Title"] = "Danh sách tin";
+    var boLoc = ViewData["BoLoc"] as TRo123.Models.TimKiemPhongViewModel ?? new();
+    var tinhThanhPho = ViewData["TinhThanhPho"] as List<TRo123.Models.TinhThanhPhoDto> ?? [];
+    var quanHuyen = ViewData["QuanHuyen"] as List<TRo123.Models.QuanHuyenDto> ?? [];
 }
 
 <div class="page-heading">
@@ -8,12 +11,28 @@
     <p>Tổng hợp tin đăng mới nhất, đã được kiểm duyệt thông tin cơ bản.</p>
 </div>
 
-<div class="filter-bar">
-    <select><option>Tỉnh/Thành phố</option><option>TP.HCM</option><option>Hà Nội</option></select>
-    <select><option>Quận/Huyện</option><option>Quận 1</option><option>Quận 7</option></select>
-    <select><option>Mức giá</option><option>Dưới 3 triệu</option><option>3 - 5 triệu</option></select>
-    <button class="btn btn-danger">Lọc tin</button>
-</div>
+<form class="filter-bar" asp-controller="Home" asp-action="Listings" method="get">
+    <input type="text" name="tuKhoa" value="@boLoc.TuKhoa" placeholder="Từ khóa" />
+    <select name="maTinhThanhPho" id="selTinh">
+        <option value="">Tỉnh/Thành phố</option>
+        @foreach (var item in tinhThanhPho)
+        {
+            <option value="@item.MaTinhThanhPho" selected="@(boLoc.MaTinhThanhPho == item.MaTinhThanhPho ? "selected" : null)">@item.TenTinhThanhPho</option>
+        }
+    </select>
+    <select name="maQuanHuyen" id="selQuan">
+        <option value="">Quận/Huyện</option>
+        @foreach (var item in quanHuyen)
+        {
+            <option value="@item.MaQuanHuyen" selected="@(boLoc.MaQuanHuyen == item.MaQuanHuyen ? "selected" : null)">@item.TenQuanHuyen</option>
+        }
+    </select>
+    <input type="number" min="0" name="giaMin" value="@boLoc.GiaMin" placeholder="Giá từ" />
+    <input type="number" min="0" name="giaMax" value="@boLoc.GiaMax" placeholder="Giá đến" />
+    <input type="number" min="0" name="dienTichMin" value="@boLoc.DienTichMin" placeholder="DT từ" />
+    <input type="number" min="0" name="dienTichMax" value="@boLoc.DienTichMax" placeholder="DT đến" />
+    <button type="submit" class="btn btn-danger">Lọc tin</button>
+</form>
 
 <div class="content-grid mt-3">
     <div class="left-col">
@@ -43,11 +62,45 @@
         <div class="side-card">
             <h4>Xem theo khoảng giá</h4>
             <ul>
-                <li><a href="#">Dưới 2 triệu</a></li>
-                <li><a href="#">2 - 3 triệu</a></li>
-                <li><a href="#">3 - 5 triệu</a></li>
-                <li><a href="#">Trên 5 triệu</a></li>
+                <li><a asp-action="Listings" asp-route-giaMax="2000000">Dưới 2 triệu</a></li>
+                <li><a asp-action="Listings" asp-route-giaMin="2000000" asp-route-giaMax="3000000">2 - 3 triệu</a></li>
+                <li><a asp-action="Listings" asp-route-giaMin="3000000" asp-route-giaMax="5000000">3 - 5 triệu</a></li>
+                <li><a asp-action="Listings" asp-route-giaMin="5000000">Trên 5 triệu</a></li>
             </ul>
         </div>
     </aside>
 </div>
+
+@section Scripts {
+    <script>
+        async function fetchJson(url) {
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (!res.ok) return [];
+            return await res.json();
+        }
+
+        function fillSelect(sel, items, valueKey, textKey, placeholder) {
+            const current = sel.value;
+            sel.innerHTML = '';
+            const opt0 = document.createElement('option');
+            opt0.value = '';
+            opt0.textContent = placeholder;
+            sel.appendChild(opt0);
+            for (const it of items) {
+                const opt = document.createElement('option');
+                opt.value = it[valueKey];
+                opt.textContent = it[textKey];
+                sel.appendChild(opt);
+            }
+            if (current) sel.value = current;
+        }
+
+        const selTinh = document.getElementById('selTinh');
+        const selQuan = document.getElementById('selQuan');
+        selTinh?.addEventListener('change', async () => {
+            const maTinh = selTinh.value;
+            const dsQuan = maTinh ? await fetchJson(`@Url.Action("QuanHuyen","Home")?maTinh=${encodeURIComponent(maTinh)}`) : [];
+            fillSelect(selQuan, dsQuan, 'maQuanHuyen', 'tenQuanHuyen', 'Quận/Huyện');
+        });
+    </script>
+}

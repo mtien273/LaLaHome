@@ -59,6 +59,68 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         return result;
     }
 
+    public async Task<List<PhongTroItemViewModel>> TimKiemPhongAsync(TimKiemPhongViewModel boLoc, int soLuong = 200)
+    {
+        const string sql = """
+            SELECT TOP (@SoLuong)
+                p.PK_MaPhong,
+                ISNULL(p.sTenPhongTro, N'Phòng trọ') AS sTenPhongTro,
+                ISNULL(p.fGiaPhong, 0) AS fGiaPhong,
+                ISNULL(p.fDienTich, 0) AS fDienTich,
+                ISNULL(dc.sDiaChiChiTiet, N'') + N' ' +
+                ISNULL(xa.sTenXaPhuongThiTran, N'') + N' ' +
+                ISNULL(qh.sTenQuanHuyen, N'') + N' ' +
+                ISNULL(tp.sTenTinhThanhPho, N'') AS DiaChiDayDu,
+                ISNULL(p.sSDT, N'') AS sSDT,
+                (SELECT TOP 1 sDuongDan FROM tblAnh a WHERE a.FK_MaPhong = p.PK_MaPhong) AS sDuongDan
+            FROM tblPhong p
+            LEFT JOIN tblDiaChi dc ON dc.FK_MaPhong = p.PK_MaPhong
+            LEFT JOIN tblXaPhuongThiTran xa ON xa.PK_MaXaPhuongThiTran = dc.FK_MaXaPhuongThiTran
+            LEFT JOIN tblQuanHuyen qh ON qh.PK_MaQuanHuyen = dc.FK_MaQuanHuyen
+            LEFT JOIN tblTinhThanhPho tp ON tp.PK_MaTinhThanhPho = dc.FK_MaTinhThanhPho
+            WHERE p.FK_MaKiemDuyet = N'KD001'
+              AND ISNULL(p.bTrangThai, 0) = 1
+              AND (@TuKhoa IS NULL OR p.sTenPhongTro LIKE N'%' + @TuKhoa + N'%' OR dc.sDiaChiChiTiet LIKE N'%' + @TuKhoa + N'%')
+              AND (@MaTinh IS NULL OR dc.FK_MaTinhThanhPho = @MaTinh)
+              AND (@MaQuan IS NULL OR dc.FK_MaQuanHuyen = @MaQuan)
+              AND (@GiaMin IS NULL OR p.fGiaPhong >= @GiaMin)
+              AND (@GiaMax IS NULL OR p.fGiaPhong <= @GiaMax)
+              AND (@DienTichMin IS NULL OR p.fDienTich >= @DienTichMin)
+              AND (@DienTichMax IS NULL OR p.fDienTich <= @DienTichMax)
+            ORDER BY p.dNgayDang DESC, p.PK_MaPhong DESC;
+            """;
+
+        var result = new List<PhongTroItemViewModel>();
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@SoLuong", soLuong);
+        cmd.Parameters.AddWithValue("@TuKhoa", string.IsNullOrWhiteSpace(boLoc.TuKhoa) ? DBNull.Value : boLoc.TuKhoa.Trim());
+        cmd.Parameters.AddWithValue("@MaTinh", string.IsNullOrWhiteSpace(boLoc.MaTinhThanhPho) ? DBNull.Value : boLoc.MaTinhThanhPho.Trim());
+        cmd.Parameters.AddWithValue("@MaQuan", string.IsNullOrWhiteSpace(boLoc.MaQuanHuyen) ? DBNull.Value : boLoc.MaQuanHuyen.Trim());
+        cmd.Parameters.AddWithValue("@GiaMin", boLoc.GiaMin.HasValue ? boLoc.GiaMin.Value : DBNull.Value);
+        cmd.Parameters.AddWithValue("@GiaMax", boLoc.GiaMax.HasValue ? boLoc.GiaMax.Value : DBNull.Value);
+        cmd.Parameters.AddWithValue("@DienTichMin", boLoc.DienTichMin.HasValue ? boLoc.DienTichMin.Value : DBNull.Value);
+        cmd.Parameters.AddWithValue("@DienTichMax", boLoc.DienTichMax.HasValue ? boLoc.DienTichMax.Value : DBNull.Value);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            result.Add(new PhongTroItemViewModel
+            {
+                MaPhong = reader["PK_MaPhong"]?.ToString() ?? string.Empty,
+                TenPhong = reader["sTenPhongTro"]?.ToString() ?? string.Empty,
+                GiaPhong = Convert.ToDouble(reader["fGiaPhong"]),
+                DienTich = Convert.ToDouble(reader["fDienTich"]),
+                DiaChiDayDu = reader["DiaChiDayDu"]?.ToString()?.Trim() ?? string.Empty,
+                SoDienThoai = reader["sSDT"]?.ToString() ?? string.Empty,
+                DuongDanAnh = reader["sDuongDan"] as string
+            });
+        }
+
+        return result;
+    }
+
     public async Task<ChiTietPhongViewModel?> LayChiTietPhongAsync(string maPhong)
     {
         const string sql = """
