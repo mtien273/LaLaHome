@@ -176,13 +176,14 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         var maMoi = await TaoMaTaiKhoanMoiAsync(conn);
         const string sql = """
             INSERT INTO tblTaiKhoan(PK_MaTaiKhoan, sMatKhau, sSDT, sHoTen, sVaiTro)
-            VALUES(@MaTaiKhoan, @MatKhau, @SoDienThoai, @HoTen, N'NguoiDung');
+            VALUES(@MaTaiKhoan, @MatKhau, @SoDienThoai, @HoTen, @VaiTro);
             """;
         await using var cmd = new SqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@MaTaiKhoan", maMoi);
         cmd.Parameters.AddWithValue("@MatKhau", model.MatKhau);
         cmd.Parameters.AddWithValue("@SoDienThoai", model.SoDienThoai);
         cmd.Parameters.AddWithValue("@HoTen", model.HoTen);
+        cmd.Parameters.AddWithValue("@VaiTro", string.Equals(model.VaiTro, "ChuTro", StringComparison.OrdinalIgnoreCase) ? "ChuTro" : "NguoiDung");
         await cmd.ExecuteNonQueryAsync();
         return maMoi;
     }

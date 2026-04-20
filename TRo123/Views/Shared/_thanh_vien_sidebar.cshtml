@@ -19,7 +19,10 @@
             <a asp-controller="Home" asp-action="AccountManagement">Quản lý tài khoản</a>
             <a asp-controller="Home" asp-action="Moderation">Kiểm duyệt tin đăng</a>
         }
-        <a asp-controller="Home" asp-action="CreatePost">Đăng tin mới</a>
+        @if (string.Equals(vaiTro, "ChuTro", StringComparison.OrdinalIgnoreCase))
+        {
+            <a asp-controller="Home" asp-action="CreatePost">Đăng tin mới</a>
+        }
         <a asp-controller="Home" asp-action="EditPost">Chỉnh sửa tin đăng</a>
         <a asp-controller="Home" asp-action="Profile">Sửa thông tin cá nhân</a>
         <a asp-controller="Home" asp-action="ReportPost">Báo cáo bài viết</a>

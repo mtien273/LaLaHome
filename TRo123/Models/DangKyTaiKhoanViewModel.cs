@@ -15,4 +15,7 @@ public class DangKyTaiKhoanViewModel
     [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
     [StringLength(12, MinimumLength = 6, ErrorMessage = "Mật khẩu từ 6 đến 12 ký tự")]
     public string MatKhau { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Vui lòng chọn loại tài khoản")]
+    public string VaiTro { get; set; } = "NguoiDung"; // NguoiDung: người tìm kiếm, ChuTro: người cho thuê
 }

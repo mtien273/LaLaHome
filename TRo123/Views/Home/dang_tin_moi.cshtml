@@ -158,14 +158,15 @@
         selTinh?.addEventListener('change', async () => {
             const maTinh = selTinh.value;
             const dsQuan = maTinh ? await fetchJson(`@Url.Action("QuanHuyen","Home")?maTinh=${encodeURIComponent(maTinh)}`) : [];
-            fillSelect(selQuan, dsQuan, 'MaQuanHuyen', 'TenQuanHuyen', '-Chọn Quận/Huyện-');
-            fillSelect(selXa, [], 'MaXaPhuong', 'TenXaPhuong', '-Chọn Phường/Xã-');
+            // ASP.NET mặc định serialize camelCase: maQuanHuyen, tenQuanHuyen...
+            fillSelect(selQuan, dsQuan, 'maQuanHuyen', 'tenQuanHuyen', '-Chọn Quận/Huyện-');
+            fillSelect(selXa, [], 'maXaPhuong', 'tenXaPhuong', '-Chọn Phường/Xã-');
         });
 
         selQuan?.addEventListener('change', async () => {
             const maQuan = selQuan.value;
             const dsXa = maQuan ? await fetchJson(`@Url.Action("XaPhuong","Home")?maQuan=${encodeURIComponent(maQuan)}`) : [];
-            fillSelect(selXa, dsXa, 'MaXaPhuong', 'TenXaPhuong', '-Chọn Phường/Xã-');
+            fillSelect(selXa, dsXa, 'maXaPhuong', 'tenXaPhuong', '-Chọn Phường/Xã-');
         });
     </script>
 }

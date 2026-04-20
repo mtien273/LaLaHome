@@ -65,6 +65,12 @@ namespace TRo123.Controllers
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để đăng tin.";
                 return RedirectToAction(nameof(Login));
             }
+            if (!string.Equals(CurrentRole, "ChuTro", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(CurrentRole, "QuanTri", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Chỉ tài khoản Chủ trọ mới được phép đăng tin.";
+                return RedirectToAction(nameof(Index));
+            }
 
             await LoadDanhMucAsync();
             var user = await repository.LayTaiKhoanTheoMaAsync(CurrentUserId);
@@ -84,6 +90,12 @@ namespace TRo123.Controllers
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để đăng tin.";
                 return RedirectToAction(nameof(Login));
+            }
+            if (!string.Equals(CurrentRole, "ChuTro", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(CurrentRole, "QuanTri", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Chỉ tài khoản Chủ trọ mới được phép đăng tin.";
+                return RedirectToAction(nameof(Index));
             }
 
             model.MaTaiKhoan = CurrentUserId;
