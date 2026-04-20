@@ -18,13 +18,20 @@
         {
             <a asp-controller="Home" asp-action="AccountManagement">Quản lý tài khoản</a>
             <a asp-controller="Home" asp-action="Moderation">Kiểm duyệt tin đăng</a>
+            <a asp-controller="Home" asp-action="ReportManagement">Quản lý tố cáo</a>
         }
         @if (string.Equals(vaiTro, "ChuTro", StringComparison.OrdinalIgnoreCase))
         {
             <a asp-controller="Home" asp-action="CreatePost">Đăng tin mới</a>
+            <a asp-controller="Home" asp-action="MyPosts">Quản lý tin đăng</a>
         }
-        <a asp-controller="Home" asp-action="EditPost">Chỉnh sửa tin đăng</a>
-        <a asp-controller="Home" asp-action="Profile">Sửa thông tin cá nhân</a>
-        <a asp-controller="Home" asp-action="ReportPost">Báo cáo bài viết</a>
+        @if (!string.IsNullOrWhiteSpace(maTaiKhoan))
+        {
+            <a asp-controller="Home" asp-action="Profile">Sửa thông tin cá nhân</a>
+        }
+        @if (string.Equals(vaiTro, "NguoiDung", StringComparison.OrdinalIgnoreCase))
+        {
+            <a asp-controller="Home" asp-action="MyReports">Tố cáo của tôi</a>
+        }
     </nav>
 </aside>

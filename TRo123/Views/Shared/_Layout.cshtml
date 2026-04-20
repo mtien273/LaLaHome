@@ -27,7 +27,13 @@
                     <a class="site-link" asp-controller="Home" asp-action="Profile">Tài khoản</a>
                     <a class="site-link" asp-controller="Home" asp-action="Logout">Đăng xuất</a>
                 }
-                <a class="btn btn-warning btn-sm fw-semibold" asp-controller="Home" asp-action="CreatePost">Đăng tin mới</a>
+                @{
+                    var vaiTro = Context.Session.GetString("VaiTro");
+                }
+                @if (string.Equals(vaiTro, "ChuTro", StringComparison.OrdinalIgnoreCase))
+                {
+                    <a class="btn btn-warning btn-sm fw-semibold" asp-controller="Home" asp-action="CreatePost">Đăng tin mới</a>
+                }
             </div>
         </div>
         <nav class="site-nav">
@@ -44,6 +50,7 @@
     </header>
 
     <main class="container py-4">
+        <partial name="_Alerts" />
         @RenderBody()
     </main>
 

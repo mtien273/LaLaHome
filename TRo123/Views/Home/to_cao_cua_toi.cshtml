@@ -1,0 +1,53 @@
+@{
+    ViewData["Title"] = "Tố cáo của tôi";
+}
+@model List<TRo123.Models.ToCaoChoDuyetDto>
+
+<div class="member-layout">
+    @await Html.PartialAsync("_thanh_vien_sidebar")
+    <section class="member-content">
+        <div class="form-page full-width">
+            <h1>Tố cáo của tôi</h1>
+            <p>Lịch sử các tố cáo bạn đã gửi.</p>
+
+            <div class="table-responsive mt-4">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Mã tố cáo</th>
+                            <th>Bài viết</th>
+                            <th>Lý do</th>
+                            <th>Nội dung</th>
+                            <th>Ngày gửi</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || Model.Count == 0)
+                        {
+                            <tr><td colspan="6" class="text-center text-muted">Bạn chưa gửi tố cáo nào.</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var tc in Model)
+                            {
+                                <tr>
+                                    <td>@tc.MaToCao</td>
+                                    <td>
+                                        <div class="fw-semibold">@tc.TenPhongTro</div>
+                                        <a asp-controller="Home" asp-action="Detail" asp-route-id="@tc.MaPhong" class="small">@tc.MaPhong</a>
+                                    </td>
+                                    <td>@tc.LoaiViPham</td>
+                                    <td>@(string.IsNullOrWhiteSpace(tc.NoiDung) ? "-" : tc.NoiDung)</td>
+                                    <td>@(tc.NgayTao?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                                    <td>@tc.TrangThaiDuyet</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+

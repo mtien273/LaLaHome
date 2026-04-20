@@ -115,6 +115,20 @@ CREATE TABLE tblDiaChi (
     FOREIGN KEY (FK_MaXaPhuongThiTran) REFERENCES tblXaPhuongThiTran(PK_MaXaPhuongThiTran)
 );
 
+-- Bảng Tố cáo
+CREATE TABLE tblToCao (
+    PK_MaToCao NVARCHAR(12) PRIMARY KEY,
+    FK_MaPhong NVARCHAR(10) NOT NULL,
+    FK_MaTaiKhoan NVARCHAR(10) NOT NULL, -- người báo cáo
+    FK_MaKiemDuyet NVARCHAR(15) NOT NULL,
+    sLoaiViPham NVARCHAR(100) NOT NULL,
+    sNoiDung NVARCHAR(500),
+    dNgayTao DATE NOT NULL,
+    FOREIGN KEY (FK_MaPhong) REFERENCES tblPhong(PK_MaPhong),
+    FOREIGN KEY (FK_MaTaiKhoan) REFERENCES tblTaiKhoan(PK_MaTaiKhoan),
+    FOREIGN KEY (FK_MaKiemDuyet) REFERENCES tblKiemDuyet(PK_MaKiemDuyet)
+);
+
 
 USE QL_NhaTro;
 GO
@@ -123,6 +137,7 @@ GO
 -- XÓA DỮ LIỆU CŨ (theo đúng thứ tự khóa ngoại)
 -- ==============================================================
 DELETE FROM tblPhong_DichVu;
+DELETE FROM tblToCao;
 DELETE FROM tblAnh;
 DELETE FROM tblDiaChi;
 DELETE FROM tblPhong;

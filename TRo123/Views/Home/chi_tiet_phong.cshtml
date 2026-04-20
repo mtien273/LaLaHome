@@ -16,7 +16,10 @@
         <div class="detail-box">
             <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
                 <h1 class="detail-title">@Model.TenPhong</h1>
-                <a class="btn btn-outline-primary btn-sm" asp-controller="Home" asp-action="ReportPost" asp-route-id="@Model.MaPhong">Báo cáo</a>
+                @if (string.Equals(Context.Session.GetString("VaiTro"), "NguoiDung", StringComparison.OrdinalIgnoreCase))
+                {
+                    <a class="btn btn-outline-primary btn-sm" asp-controller="Home" asp-action="ReportPost" asp-route-id="@Model.MaPhong">Báo cáo</a>
+                }
             </div>
             <p class="mb-1">Chuyên mục: <a asp-controller="Home" asp-action="Listings">@Model.LoaiPhong</a></p>
             <p class="mb-2">Địa chỉ: @Model.DiaChiDayDu</p>
