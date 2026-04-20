@@ -5,10 +5,25 @@
 
 @if (!string.IsNullOrWhiteSpace(success))
 {
-    <div class="alert alert-success">@success</div>
+    <div id="flash-success-alert" class="alert alert-success">@success</div>
 }
 @if (!string.IsNullOrWhiteSpace(error))
 {
     <div class="alert alert-danger">@error</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(success))
+{
+    <script>
+        (function () {
+            const el = document.getElementById('flash-success-alert');
+            if (!el) return;
+            setTimeout(() => {
+                el.style.transition = 'opacity 300ms ease';
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 320);
+            }, 1800);
+        })();
+    </script>
 }
 

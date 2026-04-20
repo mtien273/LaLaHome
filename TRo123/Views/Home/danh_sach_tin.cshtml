@@ -2,8 +2,7 @@
 @{
     ViewData["Title"] = "Danh sách tin";
     var boLoc = ViewData["BoLoc"] as TRo123.Models.TimKiemPhongViewModel ?? new();
-    var tinhThanhPho = ViewData["TinhThanhPho"] as List<TRo123.Models.TinhThanhPhoDto> ?? [];
-    var quanHuyen = ViewData["QuanHuyen"] as List<TRo123.Models.QuanHuyenDto> ?? [];
+    var loaiPhong = ViewData["LoaiPhong"] as List<TRo123.Models.LoaiPhongDto> ?? [];
 }
 
 <div class="page-heading">
@@ -12,19 +11,11 @@
 </div>
 
 <form class="filter-bar" asp-controller="Home" asp-action="Listings" method="get">
-    <input type="text" name="tuKhoa" value="@boLoc.TuKhoa" placeholder="Từ khóa" />
-    <select name="maTinhThanhPho" id="selTinh">
-        <option value="">Tỉnh/Thành phố</option>
-        @foreach (var item in tinhThanhPho)
+    <select name="maLoaiPhong">
+        <option value="">Loại phòng</option>
+        @foreach (var item in loaiPhong)
         {
-            <option value="@item.MaTinhThanhPho" selected="@(boLoc.MaTinhThanhPho == item.MaTinhThanhPho ? "selected" : null)">@item.TenTinhThanhPho</option>
-        }
-    </select>
-    <select name="maQuanHuyen" id="selQuan">
-        <option value="">Quận/Huyện</option>
-        @foreach (var item in quanHuyen)
-        {
-            <option value="@item.MaQuanHuyen" selected="@(boLoc.MaQuanHuyen == item.MaQuanHuyen ? "selected" : null)">@item.TenQuanHuyen</option>
+            <option value="@item.MaLoaiPhong" selected="@(boLoc.MaLoaiPhong == item.MaLoaiPhong ? "selected" : null)">@item.TenLoaiPhong</option>
         }
     </select>
     <input type="number" min="0" name="giaMin" value="@boLoc.GiaMin" placeholder="Giá từ" />
@@ -70,37 +61,3 @@
         </div>
     </aside>
 </div>
-
-@section Scripts {
-    <script>
-        async function fetchJson(url) {
-            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-            if (!res.ok) return [];
-            return await res.json();
-        }
-
-        function fillSelect(sel, items, valueKey, textKey, placeholder) {
-            const current = sel.value;
-            sel.innerHTML = '';
-            const opt0 = document.createElement('option');
-            opt0.value = '';
-            opt0.textContent = placeholder;
-            sel.appendChild(opt0);
-            for (const it of items) {
-                const opt = document.createElement('option');
-                opt.value = it[valueKey];
-                opt.textContent = it[textKey];
-                sel.appendChild(opt);
-            }
-            if (current) sel.value = current;
-        }
-
-        const selTinh = document.getElementById('selTinh');
-        const selQuan = document.getElementById('selQuan');
-        selTinh?.addEventListener('change', async () => {
-            const maTinh = selTinh.value;
-            const dsQuan = maTinh ? await fetchJson(`@Url.Action("QuanHuyen","Home")?maTinh=${encodeURIComponent(maTinh)}`) : [];
-            fillSelect(selQuan, dsQuan, 'maQuanHuyen', 'tenQuanHuyen', 'Quận/Huyện');
-        });
-    </script>
-}

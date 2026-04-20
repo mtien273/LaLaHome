@@ -17,7 +17,7 @@ namespace TRo123.Controllers
         public async Task<IActionResult> Index()
         {
             var dsPhong = await repository.LayDanhSachPhongAsync(6);
-            ViewData["TinhThanhPho"] = await repository.LayTinhThanhPhoAsync();
+            ViewData["LoaiPhong"] = await repository.LayLoaiPhongAsync();
             return View("trang_chu", dsPhong);
         }
 
@@ -25,10 +25,7 @@ namespace TRo123.Controllers
         {
             var dsPhong = await repository.TimKiemPhongAsync(boLoc);
             ViewData["BoLoc"] = boLoc;
-            ViewData["TinhThanhPho"] = await repository.LayTinhThanhPhoAsync();
-            ViewData["QuanHuyen"] = string.IsNullOrWhiteSpace(boLoc.MaTinhThanhPho)
-                ? []
-                : await repository.LayQuanHuyenAsync(boLoc.MaTinhThanhPho);
+            ViewData["LoaiPhong"] = await repository.LayLoaiPhongAsync();
             return View("danh_sach_tin", dsPhong);
         }
 

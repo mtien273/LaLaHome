@@ -1,23 +1,24 @@
 @model List<TRo123.Models.PhongTroItemViewModel>
 @{
     ViewData["Title"] = "Trang chủ";
-    var tinhThanhPho = ViewData["TinhThanhPho"] as List<TRo123.Models.TinhThanhPhoDto> ?? [];
+    var loaiPhong = ViewData["LoaiPhong"] as List<TRo123.Models.LoaiPhongDto> ?? [];
 }
 
 <section class="hero-banner">
     <h1>Tìm phòng trọ nhanh, đúng nhu cầu, giá hợp lý</h1>
     <p>Khám phá hàng nghìn tin đăng phòng trọ, nhà nguyên căn và căn hộ cho thuê trên toàn quốc.</p>
     <form class="search-box" asp-controller="Home" asp-action="Listings" method="get">
-        <input type="text" name="tuKhoa" placeholder="Từ khóa (tiêu đề, địa chỉ)" />
-        <select name="maTinhThanhPho">
-            <option value="">Khu vực</option>
-            @foreach (var item in tinhThanhPho)
+        <select name="maLoaiPhong">
+            <option value="">Loại phòng</option>
+            @foreach (var item in loaiPhong)
             {
-                <option value="@item.MaTinhThanhPho">@item.TenTinhThanhPho</option>
+                <option value="@item.MaLoaiPhong">@item.TenLoaiPhong</option>
             }
         </select>
         <input type="number" name="giaMin" min="0" placeholder="Giá từ" />
         <input type="number" name="giaMax" min="0" placeholder="Giá đến" />
+        <input type="number" name="dienTichMin" min="0" placeholder="Diện tích từ" />
+        <input type="number" name="dienTichMax" min="0" placeholder="Diện tích đến" />
         <button type="submit" class="btn btn-danger">Tìm kiếm</button>
     </form>
 </section>

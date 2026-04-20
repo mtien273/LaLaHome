@@ -80,9 +80,7 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
             LEFT JOIN tblTinhThanhPho tp ON tp.PK_MaTinhThanhPho = dc.FK_MaTinhThanhPho
             WHERE p.FK_MaKiemDuyet = N'KD001'
               AND ISNULL(p.bTrangThai, 0) = 1
-              AND (@TuKhoa IS NULL OR p.sTenPhongTro LIKE N'%' + @TuKhoa + N'%' OR dc.sDiaChiChiTiet LIKE N'%' + @TuKhoa + N'%')
-              AND (@MaTinh IS NULL OR dc.FK_MaTinhThanhPho = @MaTinh)
-              AND (@MaQuan IS NULL OR dc.FK_MaQuanHuyen = @MaQuan)
+              AND (@MaLoaiPhong IS NULL OR p.FK_MaLoaiPhong = @MaLoaiPhong)
               AND (@GiaMin IS NULL OR p.fGiaPhong >= @GiaMin)
               AND (@GiaMax IS NULL OR p.fGiaPhong <= @GiaMax)
               AND (@DienTichMin IS NULL OR p.fDienTich >= @DienTichMin)
@@ -95,9 +93,7 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         await conn.OpenAsync();
         await using var cmd = new SqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@SoLuong", soLuong);
-        cmd.Parameters.AddWithValue("@TuKhoa", string.IsNullOrWhiteSpace(boLoc.TuKhoa) ? DBNull.Value : boLoc.TuKhoa.Trim());
-        cmd.Parameters.AddWithValue("@MaTinh", string.IsNullOrWhiteSpace(boLoc.MaTinhThanhPho) ? DBNull.Value : boLoc.MaTinhThanhPho.Trim());
-        cmd.Parameters.AddWithValue("@MaQuan", string.IsNullOrWhiteSpace(boLoc.MaQuanHuyen) ? DBNull.Value : boLoc.MaQuanHuyen.Trim());
+        cmd.Parameters.AddWithValue("@MaLoaiPhong", string.IsNullOrWhiteSpace(boLoc.MaLoaiPhong) ? DBNull.Value : boLoc.MaLoaiPhong.Trim());
         cmd.Parameters.AddWithValue("@GiaMin", boLoc.GiaMin.HasValue ? boLoc.GiaMin.Value : DBNull.Value);
         cmd.Parameters.AddWithValue("@GiaMax", boLoc.GiaMax.HasValue ? boLoc.GiaMax.Value : DBNull.Value);
         cmd.Parameters.AddWithValue("@DienTichMin", boLoc.DienTichMin.HasValue ? boLoc.DienTichMin.Value : DBNull.Value);
