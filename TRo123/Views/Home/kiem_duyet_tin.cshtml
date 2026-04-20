@@ -1,0 +1,73 @@
+@{
+    ViewData["Title"] = "Kiểm duyệt tin đăng";
+}
+@model List<TRo123.Models.TinChoDuyetDto>
+
+<div class="member-layout">
+    @await Html.PartialAsync("_thanh_vien_sidebar")
+    <section class="member-content">
+        <div class="form-page full-width">
+            <h1>Kiểm duyệt tin đăng</h1>
+            <p>Danh sách tin do chủ trọ gửi lên (chờ duyệt).</p>
+
+            <div class="table-responsive mt-4">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Mã tin</th>
+                            <th>Tiêu đề</th>
+                            <th>Chủ trọ</th>
+                            <th>SDT</th>
+                            <th>Giá</th>
+                            <th>Diện tích</th>
+                            <th>Ngày đăng</th>
+                            <th style="width:220px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || Model.Count == 0)
+                        {
+                            <tr><td colspan="8" class="text-center text-muted">Không có tin nào đang chờ duyệt.</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var tin in Model)
+                            {
+                                <tr>
+                                    <td>@tin.MaPhong</td>
+                                    <td>
+                                        <div class="fw-semibold">@tin.TenPhongTro</div>
+                                        <a asp-controller="Home" asp-action="Detail" asp-route-id="@tin.MaPhong" class="small">Xem chi tiết</a>
+                                    </td>
+                                    <td>
+                                        <div>@tin.TenChuTro</div>
+                                        <div class="small text-muted">@tin.MaTaiKhoan</div>
+                                    </td>
+                                    <td>@tin.SoDienThoai</td>
+                                    <td>@($"{tin.GiaPhong:N0}")</td>
+                                    <td>@($"{tin.DienTich:N0} m²")</td>
+                                    <td>@(tin.NgayDang?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <form method="post" asp-action="ApprovePost">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="maPhong" value="@tin.MaPhong" />
+                                                <button class="btn btn-sm btn-success" type="submit">Duyệt</button>
+                                            </form>
+                                            <form method="post" asp-action="RejectPost">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="maPhong" value="@tin.MaPhong" />
+                                                <button class="btn btn-sm btn-outline-danger" type="submit">Từ chối</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+

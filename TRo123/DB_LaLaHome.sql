@@ -12,7 +12,8 @@ CREATE TABLE tblTaiKhoan (
     sMatKhau NVARCHAR(12) NOT NULL,
     sSDT NVARCHAR(10) NOT NULL,
     sHoTen NVARCHAR(30) NOT NULL,
-    sVaiTro NVARCHAR(30) NOT NULL
+    sVaiTro NVARCHAR(30) NOT NULL,
+    bTrangThai BIT NOT NULL CONSTRAINT DF_tblTaiKhoan_bTrangThai DEFAULT(1) -- 1: hoạt động, 0: vô hiệu hóa
 );
 
 -- Bảng Loại Phòng (Suy luận từ bảng danh sách thực thể [5] và Sơ đồ [23])
@@ -201,13 +202,13 @@ INSERT INTO tblXaPhuongThiTran (PK_MaXaPhuongThiTran, sTenXaPhuongThiTran, FK_Ma
 (N'PX013', N'Phường Thạch Thang',    N'QH009');
 
 -- 7. TÀI KHOẢN (mật khẩu tối đa 12 ký tự)
-INSERT INTO tblTaiKhoan (PK_MaTaiKhoan, sMatKhau, sSDT, sHoTen, sVaiTro) VALUES
-(N'TK0001', N'123456',   N'0901234567', N'Nguyễn Văn An',  N'ChuTro'),
-(N'TK0002', N'123456',   N'0912345678', N'Trần Thị Bình',  N'ChuTro'),
-(N'TK0003', N'123456',   N'0923456789', N'Lê Văn Cường',   N'ChuTro'),
-(N'TK0004', N'mk123456', N'0934567890', N'Phạm Thị Dung',  N'NguoiDung'),
-(N'TK0005', N'mk123456', N'0945678901', N'Hoàng Văn Em',   N'NguoiDung'),
-(N'TK0006', N'admin123', N'0909090909', N'Admin Hệ Thống', N'QuanTri');
+INSERT INTO tblTaiKhoan (PK_MaTaiKhoan, sMatKhau, sSDT, sHoTen, sVaiTro, bTrangThai) VALUES
+(N'TK0001', N'123456',   N'0901234567', N'Nguyễn Văn An',  N'ChuTro',     1),
+(N'TK0002', N'123456',   N'0912345678', N'Trần Thị Bình',  N'ChuTro',     1),
+(N'TK0003', N'123456',   N'0923456789', N'Lê Văn Cường',   N'ChuTro',     1),
+(N'TK0004', N'mk123456', N'0934567890', N'Phạm Thị Dung',  N'NguoiDung',  1),
+(N'TK0005', N'mk123456', N'0945678901', N'Hoàng Văn Em',   N'NguoiDung',  1),
+(N'TK0006', N'admin123', N'0909090909', N'Admin Hệ Thống', N'QuanTri',    1);
 
 -- 8. PHÒNG
 INSERT INTO tblPhong (PK_MaPhong, FK_MaLoaiPhong, FK_MaTaiKhoan, FK_MaKiemDuyet,

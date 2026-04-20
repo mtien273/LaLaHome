@@ -27,6 +27,7 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
             LEFT JOIN tblXaPhuongThiTran xa ON xa.PK_MaXaPhuongThiTran = dc.FK_MaXaPhuongThiTran
             LEFT JOIN tblQuanHuyen qh ON qh.PK_MaQuanHuyen = dc.FK_MaQuanHuyen
             LEFT JOIN tblTinhThanhPho tp ON tp.PK_MaTinhThanhPho = dc.FK_MaTinhThanhPho
+            WHERE p.FK_MaKiemDuyet = N'KD001' AND ISNULL(p.bTrangThai, 0) = 1
             ORDER BY p.dNgayDang DESC, p.PK_MaPhong DESC;
             """;
 
@@ -77,13 +78,74 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
             LEFT JOIN tblXaPhuongThiTran xa ON xa.PK_MaXaPhuongThiTran = dc.FK_MaXaPhuongThiTran
             LEFT JOIN tblQuanHuyen qh ON qh.PK_MaQuanHuyen = dc.FK_MaQuanHuyen
             LEFT JOIN tblTinhThanhPho tp ON tp.PK_MaTinhThanhPho = dc.FK_MaTinhThanhPho
-            WHERE p.PK_MaPhong = @MaPhong;
+            WHERE p.PK_MaPhong = @MaPhong AND p.FK_MaKiemDuyet = N'KD001' AND ISNULL(p.bTrangThai, 0) = 1;
             """;
 
         await using var conn = new SqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new SqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        return new ChiTietPhongViewModel
+        {
+            MaPhong = reader["PK_MaPhong"]?.ToString() ?? string.Empty,
+            TenPhong = reader["sTenPhongTro"]?.ToString() ?? string.Empty,
+            GiaPhong = Convert.ToDouble(reader["fGiaPhong"]),
+            DienTich = Convert.ToDouble(reader["fDienTich"]),
+            GiaDien = Convert.ToDouble(reader["fGiaDien"]),
+            GiaNuoc = Convert.ToDouble(reader["fGiaNuoc"]),
+            NgayDang = reader["dNgayDang"] == DBNull.Value ? null : Convert.ToDateTime(reader["dNgayDang"]),
+            SoDienThoai = reader["sSDT"]?.ToString() ?? string.Empty,
+            LoaiPhong = reader["sTenLoaiPhong"]?.ToString() ?? string.Empty,
+            DiaChiDayDu = reader["DiaChiDayDu"]?.ToString()?.Trim() ?? string.Empty,
+            DuongDanAnh = reader["sDuongDan"] as string
+        };
+    }
+
+    public async Task<ChiTietPhongViewModel?> LayChiTietPhongChoPhepAsync(string maPhong, string? maTaiKhoan, bool laQuanTri)
+    {
+        // Nếu là quản trị hoặc chủ tin -> xem được cả tin chưa duyệt / bị tắt
+        const string sql = """
+            SELECT TOP 1
+                p.PK_MaPhong,
+                ISNULL(p.sTenPhongTro, N'Phòng trọ') AS sTenPhongTro,
+                ISNULL(p.fGiaPhong, 0) AS fGiaPhong,
+                ISNULL(p.fDienTich, 0) AS fDienTich,
+                ISNULL(p.fGiaDien, 0) AS fGiaDien,
+                ISNULL(p.fGiaNuoc, 0) AS fGiaNuoc,
+                p.dNgayDang,
+                ISNULL(p.sSDT, N'') AS sSDT,
+                ISNULL(lp.sTenLoaiPhong, N'') AS sTenLoaiPhong,
+                ISNULL(dc.sDiaChiChiTiet, N'') + N' ' +
+                ISNULL(xa.sTenXaPhuongThiTran, N'') + N' ' +
+                ISNULL(qh.sTenQuanHuyen, N'') + N' ' +
+                ISNULL(tp.sTenTinhThanhPho, N'') AS DiaChiDayDu,
+                (SELECT TOP 1 sDuongDan FROM tblAnh a WHERE a.FK_MaPhong = p.PK_MaPhong) AS sDuongDan
+            FROM tblPhong p
+            LEFT JOIN tblLoaiPhong lp ON lp.PK_MaLoaiPhong = p.FK_MaLoaiPhong
+            LEFT JOIN tblDiaChi dc ON dc.FK_MaPhong = p.PK_MaPhong
+            LEFT JOIN tblXaPhuongThiTran xa ON xa.PK_MaXaPhuongThiTran = dc.FK_MaXaPhuongThiTran
+            LEFT JOIN tblQuanHuyen qh ON qh.PK_MaQuanHuyen = dc.FK_MaQuanHuyen
+            LEFT JOIN tblTinhThanhPho tp ON tp.PK_MaTinhThanhPho = dc.FK_MaTinhThanhPho
+            WHERE p.PK_MaPhong = @MaPhong
+              AND (
+                    (p.FK_MaKiemDuyet = N'KD001' AND ISNULL(p.bTrangThai, 0) = 1)
+                    OR (@LaQuanTri = 1)
+                    OR (p.FK_MaTaiKhoan = @MaTaiKhoan)
+                  );
+            """;
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+        cmd.Parameters.AddWithValue("@LaQuanTri", laQuanTri ? 1 : 0);
+        cmd.Parameters.AddWithValue("@MaTaiKhoan", (object?)maTaiKhoan ?? DBNull.Value);
         await using var reader = await cmd.ExecuteReaderAsync();
         if (!await reader.ReadAsync())
         {
@@ -227,6 +289,40 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
             });
         }
         return result;
+    }
+
+    public async Task CapNhatTaiKhoanBoiQuanTriAsync(CapNhatTaiKhoanQuanTriViewModel model)
+    {
+        const string sql = """
+            UPDATE tblTaiKhoan
+            SET sHoTen = @HoTen,
+                sSDT = @SoDienThoai
+            WHERE PK_MaTaiKhoan = @MaTaiKhoan;
+            """;
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaTaiKhoan", model.MaTaiKhoan);
+        cmd.Parameters.AddWithValue("@HoTen", model.HoTen);
+        cmd.Parameters.AddWithValue("@SoDienThoai", model.SoDienThoai);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task CapLaiMatKhauAsync(string maTaiKhoan, string matKhauMoi)
+    {
+        const string sql = """
+            UPDATE tblTaiKhoan
+            SET sMatKhau = @MatKhauMoi
+            WHERE PK_MaTaiKhoan = @MaTaiKhoan;
+            """;
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaTaiKhoan", maTaiKhoan);
+        cmd.Parameters.AddWithValue("@MatKhauMoi", matKhauMoi);
+        await cmd.ExecuteNonQueryAsync();
     }
 
     public async Task<List<LoaiPhongDto>> LayLoaiPhongAsync()
@@ -506,6 +602,68 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
             await tx.RollbackAsync();
             throw;
         }
+    }
+
+    public async Task<List<TinChoDuyetDto>> LayDanhSachTinChoDuyetAsync()
+    {
+        const string sql = """
+            SELECT
+                p.PK_MaPhong,
+                ISNULL(p.sTenPhongTro, N'') AS sTenPhongTro,
+                p.FK_MaTaiKhoan,
+                ISNULL(tk.sHoTen, N'') AS sHoTen,
+                ISNULL(p.sSDT, N'') AS sSDT,
+                ISNULL(p.fGiaPhong, 0) AS fGiaPhong,
+                ISNULL(p.fDienTich, 0) AS fDienTich,
+                p.dNgayDang,
+                ISNULL(kd.sTrangThaiDuyet, N'') AS sTrangThaiDuyet
+            FROM tblPhong p
+            LEFT JOIN tblTaiKhoan tk ON tk.PK_MaTaiKhoan = p.FK_MaTaiKhoan
+            LEFT JOIN tblKiemDuyet kd ON kd.PK_MaKiemDuyet = p.FK_MaKiemDuyet
+            WHERE p.FK_MaKiemDuyet = N'KD002'
+            ORDER BY p.dNgayDang DESC, p.PK_MaPhong DESC;
+            """;
+
+        var result = new List<TinChoDuyetDto>();
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            result.Add(new TinChoDuyetDto
+            {
+                MaPhong = reader["PK_MaPhong"]?.ToString() ?? string.Empty,
+                TenPhongTro = reader["sTenPhongTro"]?.ToString() ?? string.Empty,
+                MaTaiKhoan = reader["FK_MaTaiKhoan"]?.ToString() ?? string.Empty,
+                TenChuTro = reader["sHoTen"]?.ToString() ?? string.Empty,
+                SoDienThoai = reader["sSDT"]?.ToString() ?? string.Empty,
+                GiaPhong = Convert.ToDouble(reader["fGiaPhong"]),
+                DienTich = Convert.ToDouble(reader["fDienTich"]),
+                NgayDang = reader["dNgayDang"] == DBNull.Value ? null : Convert.ToDateTime(reader["dNgayDang"]),
+                TrangThaiDuyet = reader["sTrangThaiDuyet"]?.ToString() ?? string.Empty
+            });
+        }
+
+        return result;
+    }
+
+    public async Task CapNhatTrangThaiDuyetTinAsync(string maPhong, string maKiemDuyet, bool trangThaiHoatDong)
+    {
+        const string sql = """
+            UPDATE tblPhong
+            SET FK_MaKiemDuyet = @MaKiemDuyet,
+                bTrangThai = @TrangThai
+            WHERE PK_MaPhong = @MaPhong;
+            """;
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+        cmd.Parameters.AddWithValue("@MaKiemDuyet", maKiemDuyet);
+        cmd.Parameters.AddWithValue("@TrangThai", trangThaiHoatDong ? 1 : 0);
+        await cmd.ExecuteNonQueryAsync();
     }
 
     public async Task<string> UploadAnhAsync(IFormFile file, IWebHostEnvironment env)

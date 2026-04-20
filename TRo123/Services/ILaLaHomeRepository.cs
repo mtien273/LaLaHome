@@ -6,12 +6,15 @@ public interface ILaLaHomeRepository
 {
     Task<List<PhongTroItemViewModel>> LayDanhSachPhongAsync(int soLuong = 30);
     Task<ChiTietPhongViewModel?> LayChiTietPhongAsync(string maPhong);
-    Task<string> TaoTaiKhoanAsync(DangKyTaiKhoanViewModel model);
+    Task<ChiTietPhongViewModel?> LayChiTietPhongChoPhepAsync(string maPhong, string? maTaiKhoan, bool laQuanTri);
+    Task<string> TaoTaiKhoanAsync(DangKyTaiKhoanViewModel model); 
     Task<bool> KiemTraDangNhapAsync(DangNhapViewModel model);
     Task<TaiKhoanDto?> LayTaiKhoanTheoDangNhapAsync(DangNhapViewModel model);
     Task<TaiKhoanDto?> LayTaiKhoanTheoMaAsync(string maTaiKhoan);
     Task CapNhatThongTinTaiKhoanAsync(CapNhatTaiKhoanViewModel model);
     Task<List<TaiKhoanDto>> LayDanhSachTaiKhoanAsync();
+    Task CapNhatTaiKhoanBoiQuanTriAsync(CapNhatTaiKhoanQuanTriViewModel model);
+    Task CapLaiMatKhauAsync(string maTaiKhoan, string matKhauMoi);
 
     Task<List<LoaiPhongDto>> LayLoaiPhongAsync();
     Task<List<TinhThanhPhoDto>> LayTinhThanhPhoAsync();
@@ -21,6 +24,8 @@ public interface ILaLaHomeRepository
     Task<string> TaoTinPhongAsync(TaoTinPhongViewModel model);
     Task<TaoTinPhongViewModel?> LayTinPhongDeSuaAsync(string maPhong);
     Task CapNhatTinPhongAsync(TaoTinPhongViewModel model);
+    Task<List<TinChoDuyetDto>> LayDanhSachTinChoDuyetAsync();
+    Task CapNhatTrangThaiDuyetTinAsync(string maPhong, string maKiemDuyet, bool trangThaiHoatDong);
 
     Task<string> UploadAnhAsync(IFormFile file, IWebHostEnvironment env);
     Task LuuAnhVaoDbAsync(string maPhong, string maTaiKhoan, string duongDan);

@@ -40,7 +40,10 @@ namespace TRo123.Controllers
                 return RedirectToAction(nameof(Listings));
             }
 
-            var chiTiet = await repository.LayChiTietPhongAsync(id);
+            var chiTiet = await repository.LayChiTietPhongChoPhepAsync(
+                id,
+                CurrentUserId,
+                string.Equals(CurrentRole, "QuanTri", StringComparison.OrdinalIgnoreCase));
             if (chiTiet is null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy phòng cần xem.";
@@ -303,6 +306,109 @@ namespace TRo123.Controllers
 
             var ds = await repository.LayDanhSachTaiKhoanAsync();
             return View("quan_ly_tai_khoan_nguoi_dung", ds);
+        }
+
+        public async Task<IActionResult> AccountEdit(string id)
+        {
+            if (!string.Equals(CurrentRole, "QuanTri", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền truy cập chức năng này.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var user = await repository.LayTaiKhoanTheoMaAsync(id);
+            if (user is null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản.";
+                return RedirectToAction(nameof(AccountManagementList));
+            }
+
+            var model = new CapNhatTaiKhoanQuanTriViewModel
+            {
+                MaTaiKhoan = user.MaTaiKhoan,
+                HoTen = user.HoTen,
+                SoDienThoai = user.SoDienThoai,
+                VaiTro = user.VaiTro
+            };
+            return View("cap_nhat_tai_khoan_nguoi_dung", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AccountEdit(CapNhatTaiKhoanQuanTriViewModel model)
+        {
+            if (!string.Equals(CurrentRole, "QuanTri", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền truy cập chức năng này.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View("cap_nhat_tai_khoan_nguoi_dung", model);
+            }
+
+            await repository.CapNhatTaiKhoanBoiQuanTriAsync(model);
+            TempData["SuccessMessage"] = "Cập nhật thông tin tài khoản thành công.";
+            return RedirectToAction(nameof(AccountEdit), new { id = model.MaTaiKhoan });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string maTaiKhoan)
+        {
+            if (!string.Equals(CurrentRole, "QuanTri", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền truy cập chức năng này.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Mặc định cấp lại mật khẩu: 123456 (đúng constraint 6-12)
+            await repository.CapLaiMatKhauAsync(maTaiKhoan, "123456");
+            TempData["SuccessMessage"] = $"Đã cấp lại mật khẩu cho {maTaiKhoan} (mật khẩu mới: 123456).";
+            return RedirectToAction(nameof(AccountEdit), new { id = maTaiKhoan });
+        }
+
+        public async Task<IActionResult> Moderation()
+        {
+            if (!string.Equals(CurrentRole, "QuanTri", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền truy cập chức năng này.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var ds = await repository.LayDanhSachTinChoDuyetAsync();
+            return View("kiem_duyet_tin", ds);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApprovePost(string maPhong)
+        {
+            if (!string.Equals(CurrentRole, "QuanTri", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền truy cập chức năng này.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            await repository.CapNhatTrangThaiDuyetTinAsync(maPhong, "KD001", true);
+            TempData["SuccessMessage"] = $"Đã duyệt tin {maPhong}.";
+            return RedirectToAction(nameof(Moderation));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectPost(string maPhong)
+        {
+            if (!string.Equals(CurrentRole, "QuanTri", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền truy cập chức năng này.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            await repository.CapNhatTrangThaiDuyetTinAsync(maPhong, "KD003", false);
+            TempData["SuccessMessage"] = $"Đã từ chối tin {maPhong}.";
+            return RedirectToAction(nameof(Moderation));
         }
 
         [HttpGet]

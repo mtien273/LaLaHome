@@ -18,12 +18,13 @@
                             <th>Họ tên</th>
                             <th>Số điện thoại</th>
                             <th>Vai trò</th>
+                            <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (Model == null || Model.Count == 0)
                         {
-                            <tr><td colspan="4" class="text-center text-muted">Chưa có dữ liệu tài khoản.</td></tr>
+                            <tr><td colspan="5" class="text-center text-muted">Chưa có dữ liệu tài khoản.</td></tr>
                         }
                         else
                         {
@@ -34,6 +35,9 @@
                                     <td>@tk.HoTen</td>
                                     <td>@tk.SoDienThoai</td>
                                     <td>@tk.VaiTro</td>
+                                    <td style="min-width: 200px;">
+                                        <a class="btn btn-sm btn-outline-primary" asp-action="AccountEdit" asp-route-id="@tk.MaTaiKhoan">Quản lý</a>
+                                    </td>
                                 </tr>
                             }
                         }
