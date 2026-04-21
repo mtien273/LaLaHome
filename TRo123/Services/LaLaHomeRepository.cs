@@ -251,6 +251,22 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         return maMoi;
     }
 
+    public async Task<bool> KiemTraSoDienThoaiTonTaiAsync(string soDienThoai)
+    {
+        const string sql = """
+            SELECT TOP 1 1
+            FROM tblTaiKhoan
+            WHERE LTRIM(RTRIM(sSDT)) = @SoDienThoai;
+            """;
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@SoDienThoai", soDienThoai);
+        var result = await cmd.ExecuteScalarAsync();
+        return result is not null;
+    }
+
     public async Task<bool> KiemTraDangNhapAsync(DangNhapViewModel model)
     {
         return await LayTaiKhoanTheoDangNhapAsync(model) is not null;
@@ -261,7 +277,7 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         const string sql = """
             SELECT TOP 1 PK_MaTaiKhoan, sSDT, sHoTen, sVaiTro
             FROM tblTaiKhoan
-            WHERE sSDT = @SoDienThoai AND sMatKhau = @MatKhau;
+            WHERE LTRIM(RTRIM(sSDT)) = @SoDienThoai AND sMatKhau = @MatKhau;
             """;
 
         await using var conn = new SqlConnection(_connectionString);
@@ -507,11 +523,11 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
                 cmd.Parameters.AddWithValue("@MaLoaiPhong", model.MaLoaiPhong);
                 cmd.Parameters.AddWithValue("@MaTaiKhoan", model.MaTaiKhoan);
                 cmd.Parameters.AddWithValue("@TenPhongTro", model.TenPhongTro);
-                cmd.Parameters.AddWithValue("@GiaPhong", model.GiaPhong);
-                cmd.Parameters.AddWithValue("@GiaDien", model.GiaDien);
-                cmd.Parameters.AddWithValue("@GiaNuoc", model.GiaNuoc);
+                cmd.Parameters.AddWithValue("@GiaPhong", model.GiaPhong ?? 0);
+                cmd.Parameters.AddWithValue("@GiaDien", model.GiaDien ?? 0);
+                cmd.Parameters.AddWithValue("@GiaNuoc", model.GiaNuoc ?? 0);
                 cmd.Parameters.AddWithValue("@SoDienThoai", model.SoDienThoai);
-                cmd.Parameters.AddWithValue("@DienTich", model.DienTich);
+                cmd.Parameters.AddWithValue("@DienTich", model.DienTich ?? 0);
                 await cmd.ExecuteNonQueryAsync();
             }
 
@@ -623,11 +639,11 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
                 cmd.Parameters.AddWithValue("@MaPhong", model.MaPhong);
                 cmd.Parameters.AddWithValue("@MaLoaiPhong", model.MaLoaiPhong);
                 cmd.Parameters.AddWithValue("@TenPhongTro", model.TenPhongTro);
-                cmd.Parameters.AddWithValue("@GiaPhong", model.GiaPhong);
-                cmd.Parameters.AddWithValue("@GiaDien", model.GiaDien);
-                cmd.Parameters.AddWithValue("@GiaNuoc", model.GiaNuoc);
+                cmd.Parameters.AddWithValue("@GiaPhong", model.GiaPhong ?? 0);
+                cmd.Parameters.AddWithValue("@GiaDien", model.GiaDien ?? 0);
+                cmd.Parameters.AddWithValue("@GiaNuoc", model.GiaNuoc ?? 0);
                 cmd.Parameters.AddWithValue("@SoDienThoai", model.SoDienThoai);
-                cmd.Parameters.AddWithValue("@DienTich", model.DienTich);
+                cmd.Parameters.AddWithValue("@DienTich", model.DienTich ?? 0);
                 await cmd.ExecuteNonQueryAsync();
             }
 
@@ -771,7 +787,9 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
 
     public async Task<string> UploadAnhAsync(IFormFile file, IWebHostEnvironment env)
     {
-        var tenFile = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        var ext = Path.GetExtension(file.FileName);
+        var random = Convert.ToHexString(Guid.NewGuid().ToByteArray())[..8];
+        var tenFile = $"p_{DateTime.UtcNow:yyMMddHHmmss}_{random}{ext}";
         var folder = Path.Combine(env.WebRootPath, "uploads", "phong");
         Directory.CreateDirectory(folder);
         var duongDanDayDu = Path.Combine(folder, tenFile);
@@ -788,74 +806,74 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
             """;
         await using var conn = new SqlConnection(_connectionString);
         await conn.OpenAsync();
-        await using var cmd = new SqlCommand(sql, conn);
-        cmd.Parameters.AddWithValue("@MaAnh", $"ANH{Guid.NewGuid().ToString()[..6].ToUpper()}");
-        cmd.Parameters.AddWithValue("@MaPhong", maPhong);
-        cmd.Parameters.AddWithValue("@MaTaiKhoan", maTaiKhoan);
-        cmd.Parameters.AddWithValue("@DuongDan", duongDan);
-        await cmd.ExecuteNonQueryAsync();
+        await using var tx = conn.BeginTransaction();
+        try
+        {
+            var maAnh = await TaoMaAnhMoiAsync(conn, tx);
+            await using var cmd = new SqlCommand(sql, conn, tx);
+            cmd.Parameters.AddWithValue("@MaAnh", maAnh);
+            cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+            cmd.Parameters.AddWithValue("@MaTaiKhoan", maTaiKhoan);
+            cmd.Parameters.AddWithValue("@DuongDan", duongDan);
+            await cmd.ExecuteNonQueryAsync();
+            await tx.CommitAsync();
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
+        }
     }
 
     private static async Task<string> TaoMaTaiKhoanMoiAsync(SqlConnection conn)
     {
         const string sql = """
-            SELECT TOP 1 PK_MaTaiKhoan
+            SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(PK_MaTaiKhoan, 3, LEN(PK_MaTaiKhoan) - 2))), 0)
             FROM tblTaiKhoan
-            WHERE PK_MaTaiKhoan LIKE 'TK%'
-            ORDER BY PK_MaTaiKhoan DESC;
+            WHERE PK_MaTaiKhoan LIKE 'TK%';
             """;
         await using var cmd = new SqlCommand(sql, conn);
-        var maCuoi = (string?)await cmd.ExecuteScalarAsync();
-        if (string.IsNullOrWhiteSpace(maCuoi))
-        {
-            return "TK0001";
-        }
-
-        var so = 0;
-        _ = int.TryParse(maCuoi.Replace("TK", string.Empty), out so);
-        return $"TK{(so + 1):D4}";
+        var soLonNhat = Convert.ToInt32(await cmd.ExecuteScalarAsync() ?? 0);
+        return $"TK{(soLonNhat + 1):D4}";
     }
 
     private static async Task<string> TaoMaPhongMoiAsync(SqlConnection conn, SqlTransaction tx)
     {
         const string sql = """
-            SELECT TOP 1 PK_MaPhong
-            FROM tblPhong
-            WHERE PK_MaPhong LIKE 'P%'
-            ORDER BY PK_MaPhong DESC;
+            SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(PK_MaPhong, 2, LEN(PK_MaPhong) - 1))), 0)
+            FROM tblPhong WITH (UPDLOCK, HOLDLOCK)
+            WHERE PK_MaPhong LIKE 'P%';
             """;
 
         await using var cmd = new SqlCommand(sql, conn, tx);
-        var maCuoi = (string?)await cmd.ExecuteScalarAsync();
-        if (string.IsNullOrWhiteSpace(maCuoi))
-        {
-            return "P0001";
-        }
-
-        var so = 0;
-        _ = int.TryParse(maCuoi.Replace("P", string.Empty), out so);
-        return $"P{(so + 1):D4}";
+        var soLonNhat = Convert.ToInt32(await cmd.ExecuteScalarAsync() ?? 0);
+        return $"P{(soLonNhat + 1):D4}";
     }
 
     private static async Task<string> TaoMaDiaChiMoiAsync(SqlConnection conn, SqlTransaction tx)
     {
         const string sql = """
-            SELECT TOP 1 PK_MaDiaChi
-            FROM tblDiaChi
-            WHERE PK_MaDiaChi LIKE 'DC%'
-            ORDER BY PK_MaDiaChi DESC;
+            SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(PK_MaDiaChi, 3, LEN(PK_MaDiaChi) - 2))), 0)
+            FROM tblDiaChi WITH (UPDLOCK, HOLDLOCK)
+            WHERE PK_MaDiaChi LIKE 'DC%';
             """;
 
         await using var cmd = new SqlCommand(sql, conn, tx);
-        var maCuoi = (string?)await cmd.ExecuteScalarAsync();
-        if (string.IsNullOrWhiteSpace(maCuoi))
-        {
-            return "DC0001";
-        }
+        var soLonNhat = Convert.ToInt32(await cmd.ExecuteScalarAsync() ?? 0);
+        return $"DC{(soLonNhat + 1):D4}";
+    }
 
-        var so = 0;
-        _ = int.TryParse(maCuoi.Replace("DC", string.Empty), out so);
-        return $"DC{(so + 1):D4}";
+    private static async Task<string> TaoMaAnhMoiAsync(SqlConnection conn, SqlTransaction tx)
+    {
+        const string sql = """
+            SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(PK_MaAnh, 4, LEN(PK_MaAnh) - 3))), 0)
+            FROM tblAnh WITH (UPDLOCK, HOLDLOCK)
+            WHERE PK_MaAnh LIKE 'ANH%';
+            """;
+
+        await using var cmd = new SqlCommand(sql, conn, tx);
+        var soLonNhat = Convert.ToInt32(await cmd.ExecuteScalarAsync() ?? 0);
+        return $"ANH{(soLonNhat + 1):D7}";
     }
 
     public async Task<string> TaoToCaoAsync(TaoToCaoViewModel model)

@@ -97,24 +97,29 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Giá cho thuê</label>
-                        <input class="form-control" asp-for="GiaPhong" />
+                        <input class="form-control" asp-for="GiaPhong" type="number" min="1000" step="1000" />
+                        <span asp-validation-for="GiaPhong" class="text-danger small"></span>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Diện tích</label>
-                        <input class="form-control" asp-for="DienTich" />
+                        <input class="form-control" asp-for="DienTich" type="number" min="1" step="0.1" />
+                        <span asp-validation-for="DienTich" class="text-danger small"></span>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Giá điện - nước</label>
-                        <input class="form-control" placeholder="Giá điện" asp-for="GiaDien" />
+                        <input class="form-control" placeholder="Giá điện" asp-for="GiaDien" type="number" min="0" step="100" />
+                        <span asp-validation-for="GiaDien" class="text-danger small"></span>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Các phí dịch vụ (nếu có)</label>
-                        <input class="form-control" placeholder="Giá nước" asp-for="GiaNuoc" />
+                        <input class="form-control" placeholder="Giá nước" asp-for="GiaNuoc" type="number" min="0" step="100" />
+                        <span asp-validation-for="GiaNuoc" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Hình ảnh/Video</label>
                         <input type="file" name="anhPhong" class="form-control" accept="image/*" />
-                        <small class="text-muted">Chấp nhận: JPG, PNG, GIF (tối đa 5MB)</small>
+                        <small class="text-muted">Chấp nhận ảnh từ máy tính (JPG, PNG, GIF, WEBP, BMP, JFIF), tối đa 10MB</small>
+                        @Html.ValidationMessage("anhPhong", new { @class = "text-danger small d-block" })
                     </div>
                 </div>
 

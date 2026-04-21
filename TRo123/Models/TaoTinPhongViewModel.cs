@@ -16,17 +16,21 @@ public class TaoTinPhongViewModel
     [StringLength(100)]
     public string TenPhongTro { get; set; } = string.Empty;
 
-    [Range(0, double.MaxValue)]
-    public double GiaPhong { get; set; }
+    [Required(ErrorMessage = "Vui lòng nhập giá cho thuê")]
+    [Range(1000, double.MaxValue, ErrorMessage = "Giá cho thuê phải lớn hơn 0")]
+    public double? GiaPhong { get; set; }
 
-    [Range(0, double.MaxValue)]
-    public double DienTich { get; set; }
+    [Required(ErrorMessage = "Vui lòng nhập diện tích")]
+    [Range(1, double.MaxValue, ErrorMessage = "Diện tích phải lớn hơn 0")]
+    public double? DienTich { get; set; }
 
-    [Range(0, double.MaxValue)]
-    public double GiaDien { get; set; }
+    [Required(ErrorMessage = "Vui lòng nhập giá điện")]
+    [Range(0, double.MaxValue, ErrorMessage = "Giá điện không hợp lệ")]
+    public double? GiaDien { get; set; }
 
-    [Range(0, double.MaxValue)]
-    public double GiaNuoc { get; set; }
+    [Required(ErrorMessage = "Vui lòng nhập giá nước")]
+    [Range(0, double.MaxValue, ErrorMessage = "Giá nước không hợp lệ")]
+    public double? GiaNuoc { get; set; }
 
     [Required(ErrorMessage = "Vui lòng nhập số điện thoại liên hệ")]
     public string SoDienThoai { get; set; } = string.Empty;

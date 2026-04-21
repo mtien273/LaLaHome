@@ -9,6 +9,7 @@ public interface ILaLaHomeRepository
     Task<ChiTietPhongViewModel?> LayChiTietPhongAsync(string maPhong);
     Task<ChiTietPhongViewModel?> LayChiTietPhongChoPhepAsync(string maPhong, string? maTaiKhoan, bool laQuanTri);
     Task<string> TaoTaiKhoanAsync(DangKyTaiKhoanViewModel model); 
+    Task<bool> KiemTraSoDienThoaiTonTaiAsync(string soDienThoai);
     Task<bool> KiemTraDangNhapAsync(DangNhapViewModel model);
     Task<TaiKhoanDto?> LayTaiKhoanTheoDangNhapAsync(DangNhapViewModel model);
     Task<TaiKhoanDto?> LayTaiKhoanTheoMaAsync(string maTaiKhoan);

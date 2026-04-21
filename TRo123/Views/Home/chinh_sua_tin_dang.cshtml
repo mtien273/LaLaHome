@@ -89,10 +89,26 @@
                         <input class="form-control" asp-for="TenPhongTro" />
                         <span asp-validation-for="TenPhongTro" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-3"><label class="form-label">Giá cho thuê</label><input class="form-control" asp-for="GiaPhong" /></div>
-                    <div class="col-md-3"><label class="form-label">Diện tích</label><input class="form-control" asp-for="DienTich" /></div>
-                    <div class="col-md-3"><label class="form-label">Giá điện</label><input class="form-control" asp-for="GiaDien" /></div>
-                    <div class="col-md-3"><label class="form-label">Giá nước</label><input class="form-control" asp-for="GiaNuoc" /></div>
+                    <div class="col-md-3">
+                        <label class="form-label">Giá cho thuê</label>
+                        <input class="form-control" asp-for="GiaPhong" type="number" min="1000" step="1000" />
+                        <span asp-validation-for="GiaPhong" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Diện tích</label>
+                        <input class="form-control" asp-for="DienTich" type="number" min="1" step="0.1" />
+                        <span asp-validation-for="DienTich" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Giá điện</label>
+                        <input class="form-control" asp-for="GiaDien" type="number" min="0" step="100" />
+                        <span asp-validation-for="GiaDien" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Giá nước</label>
+                        <input class="form-control" asp-for="GiaNuoc" type="number" min="0" step="100" />
+                        <span asp-validation-for="GiaNuoc" class="text-danger small"></span>
+                    </div>
                 </div>
 
                 <div class="text-center mt-4">

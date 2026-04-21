@@ -10,6 +10,11 @@ namespace TRo123.Controllers
     {
         private const string SessionMaTaiKhoan = "MaTaiKhoan";
         private const string SessionVaiTro = "VaiTro";
+        private const long MaxImageSizeBytes = 10 * 1024 * 1024;
+        private static readonly HashSet<string> AllowedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".jfif"
+        };
 
         private string? CurrentUserId => HttpContext.Session.GetString(SessionMaTaiKhoan);
         private string? CurrentRole => HttpContext.Session.GetString(SessionVaiTro);
@@ -107,16 +112,52 @@ namespace TRo123.Controllers
                 await LoadDanhMucAsync(model.MaTinhThanhPho, model.MaQuanHuyen);
                 return View("dang_tin_moi", model);
             }
-
-            var maPhongMoi = await repository.TaoTinPhongAsync(model);
-            if (anhPhong != null && anhPhong.Length > 0)
+            if (anhPhong is not null && anhPhong.Length > 0)
             {
-                var duongDan = await repository.UploadAnhAsync(anhPhong, env);
-                await repository.LuuAnhVaoDbAsync(maPhongMoi, model.MaTaiKhoan, duongDan);
+                var ext = Path.GetExtension(anhPhong.FileName);
+                var laAnhTheoMime = !string.IsNullOrWhiteSpace(anhPhong.ContentType)
+                    && anhPhong.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+                var laAnhTheoExt = AllowedImageExtensions.Contains(ext);
+                if (!laAnhTheoMime && !laAnhTheoExt)
+                {
+                    ModelState.AddModelError("anhPhong", "File đã chọn không phải ảnh hợp lệ.");
+                }
+                if (anhPhong.Length > MaxImageSizeBytes)
+                {
+                    ModelState.AddModelError("anhPhong", "Ảnh vượt quá 10MB. Vui lòng chọn ảnh nhỏ hơn.");
+                }
+            }
+            if (!ModelState.IsValid)
+            {
+                await LoadDanhMucAsync(model.MaTinhThanhPho, model.MaQuanHuyen);
+                return View("dang_tin_moi", model);
             }
 
-            TempData["SuccessMessage"] = $"Đăng tin thành công. Mã phòng: {maPhongMoi} (chờ duyệt)";
-            return RedirectToAction(nameof(Detail), new { id = maPhongMoi });
+            try
+            {
+                var maPhongMoi = await repository.TaoTinPhongAsync(model);
+                if (anhPhong != null && anhPhong.Length > 0)
+                {
+                    try
+                    {
+                        var duongDan = await repository.UploadAnhAsync(anhPhong, env);
+                        await repository.LuuAnhVaoDbAsync(maPhongMoi, model.MaTaiKhoan, duongDan);
+                    }
+                    catch
+                    {
+                        TempData["ErrorMessage"] = "Đăng tin thành công nhưng lưu ảnh thất bại. Vui lòng vào chỉnh sửa để tải ảnh lại.";
+                    }
+                }
+
+                TempData["SuccessMessage"] = $"Đăng tin thành công. Mã phòng: {maPhongMoi} (chờ duyệt)";
+                return RedirectToAction(nameof(Detail), new { id = maPhongMoi });
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "Không thể đăng tin lúc này. Vui lòng thử lại.");
+                await LoadDanhMucAsync(model.MaTinhThanhPho, model.MaQuanHuyen);
+                return View("dang_tin_moi", model);
+            }
         }
 
         public IActionResult Login()
@@ -128,6 +169,7 @@ namespace TRo123.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(DangNhapViewModel model)
         {
+            model.SoDienThoai = model.SoDienThoai?.Trim() ?? string.Empty;
             if (!ModelState.IsValid)
             {
                 return View("dang_nhap", model);
@@ -162,8 +204,15 @@ namespace TRo123.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(DangKyTaiKhoanViewModel model)
         {
+            model.SoDienThoai = model.SoDienThoai?.Trim() ?? string.Empty;
             if (!ModelState.IsValid)
             {
+                return View("dang_ky", model);
+            }
+
+            if (await repository.KiemTraSoDienThoaiTonTaiAsync(model.SoDienThoai))
+            {
+                ModelState.AddModelError(nameof(model.SoDienThoai), "Số điện thoại đã được đăng ký.");
                 return View("dang_ky", model);
             }
 
