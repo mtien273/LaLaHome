@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "Báo cáo bài viết";
+    var postId = ViewData["PostId"] ?? 1;
+}
+@model TRo123.Models.TaoToCaoViewModel
+
+<div class="member-layout">
+    @await Html.PartialAsync("_thanh_vien_sidebar")
+    <section class="member-content">
+        <div class="form-page full-width">
+            <h1>Báo cáo bài viết</h1>
+            <p>Hãy cho chúng tôi biết bằng cách điền thông tin dưới đây.</p>
+
+            <form class="post-form report-form mt-4" method="post" asp-action="ReportPost">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                <input type="hidden" asp-for="MaPhong" />
+                <input type="hidden" asp-for="MaTaiKhoanNguoiBaoCao" />
+                <div class="row mb-4">
+                    <div class="col-md-9">
+                        <label class="form-label">Bài viết bị tố cáo</label>
+                        <input class="form-control" value="@Url.Action("Detail","Home", new { id = Model.MaPhong }, protocol: Context.Request.Scheme)" readonly />
+                    </div>
+                </div>
+
+                <h4>Bài viết đã vi phạm tiêu chuẩn cộng đồng nào?</h4>
+                <div class="violation-list">
+                    <label><input type="radio" asp-for="LoaiViPham" value="Giả mạo người khác" /> Giả mạo người khác</label>
+                    <label><input type="radio" asp-for="LoaiViPham" value="Spam hoặc gây hại" /> Spam hoặc gây hại</label>
+                    <label><input type="radio" asp-for="LoaiViPham" value="Đăng nội dung không phù hợp" /> Đăng nội dung không phù hợp</label>
+                    <label><input type="radio" asp-for="LoaiViPham" value="Lừa đảo" /> Lừa đảo</label>
+                    <label><input type="radio" asp-for="LoaiViPham" value="Vấn đề khác" /> Vấn đề khác</label>
+                </div>
+                <span asp-validation-for="LoaiViPham" class="text-danger small"></span>
+
+                <div class="row mt-3">
+                    <div class="col-md-9">
+                        <label class="form-label">Nội dung bổ sung (tuỳ chọn)</label>
+                        <textarea class="form-control" rows="4" asp-for="NoiDung"></textarea>
+                        <span asp-validation-for="NoiDung" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mt-4">
+                    <a class="btn btn-outline-primary px-4" asp-controller="Home" asp-action="Detail" asp-route-id="@Model.MaPhong">Hủy</a>
+                    <button type="submit" class="btn btn-primary px-4">Gửi</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

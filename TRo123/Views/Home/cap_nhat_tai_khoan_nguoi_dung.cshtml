@@ -1,0 +1,79 @@
+@{
+    ViewData["Title"] = "Quản lý thông tin tài khoản";
+}
+@model TRo123.Models.CapNhatTaiKhoanQuanTriViewModel
+
+<div class="member-layout">
+    @await Html.PartialAsync("_thanh_vien_sidebar")
+    <section class="member-content">
+        <div class="form-page full-width">
+            <h1>Quản lý thông tin tài khoản</h1>
+
+            <div class="row g-4 mt-2">
+                <div class="col-lg-7">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Thông tin tài khoản</h5>
+                            <form method="post" asp-action="AccountEdit">
+                                @Html.AntiForgeryToken()
+                                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Mã tài khoản</label>
+                                    <input class="form-control" asp-for="MaTaiKhoan" readonly />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Vai trò</label>
+                                    <input class="form-control" asp-for="VaiTro" readonly />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Họ tên</label>
+                                    <input class="form-control" asp-for="HoTen" />
+                                    <span asp-validation-for="HoTen" class="text-danger small"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Số điện thoại</label>
+                                    <input class="form-control" asp-for="SoDienThoai" />
+                                    <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+                                </div>
+
+                                <button class="btn btn-primary" type="submit">Lưu cập nhật</button>
+                                <a class="btn btn-outline-secondary ms-2" asp-action="AccountManagementList">Quay lại</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Cấp lại mật khẩu</h5>
+                            <p class="text-muted mb-3">Nhấn nút dưới đây để cấp lại mật khẩu mặc định cho tài khoản này.</p>
+                            <form method="post" asp-action="ResetPassword" onsubmit="return confirm('Cấp lại mật khẩu về 123456?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="maTaiKhoan" value="@Model.MaTaiKhoan" />
+                                <button class="btn btn-warning" type="submit">Cấp lại mật khẩu (123456)</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 text-danger">Xóa tài khoản</h5>
+                            <p class="text-muted mb-3">Thao tác này sẽ xóa tài khoản và các dữ liệu liên quan (tin đăng, ảnh, địa chỉ, tố cáo...).</p>
+                            <form method="post" asp-action="DeleteAccount" onsubmit="return confirm('Bạn chắc chắn muốn xóa tài khoản này?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="maTaiKhoan" value="@Model.MaTaiKhoan" />
+                                <button class="btn btn-outline-danger" type="submit">Xóa tài khoản</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

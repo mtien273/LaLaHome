@@ -1,0 +1,59 @@
+@{
+    ViewData["Title"] = "Tin đăng của tôi";
+}
+@model List<TRo123.Models.TinCuaToiDto>
+
+<div class="member-layout">
+    @await Html.PartialAsync("_thanh_vien_sidebar")
+    <section class="member-content">
+        <div class="form-page full-width">
+            <h1>Tin đăng của tôi</h1>
+            <p>Danh sách bài đăng do bạn tạo. Nhấn “Chỉnh sửa” để cập nhật chi tiết.</p>
+
+            <div class="table-responsive mt-4">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Mã tin</th>
+                            <th>Tiêu đề</th>
+                            <th>Giá</th>
+                            <th>Diện tích</th>
+                            <th>Ngày đăng</th>
+                            <th>Trạng thái duyệt</th>
+                            <th>Hiển thị</th>
+                            <th style="width:120px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || Model.Count == 0)
+                        {
+                            <tr><td colspan="8" class="text-center text-muted">Bạn chưa có tin đăng nào.</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var tin in Model)
+                            {
+                                <tr>
+                                    <td>@tin.MaPhong</td>
+                                    <td>
+                                        <div class="fw-semibold">@tin.TenPhongTro</div>
+                                        <a asp-controller="Home" asp-action="Detail" asp-route-id="@tin.MaPhong" class="small">Xem</a>
+                                    </td>
+                                    <td>@($"{tin.GiaPhong:N0}")</td>
+                                    <td>@($"{tin.DienTich:N0} m²")</td>
+                                    <td>@(tin.NgayDang?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                    <td>@tin.TrangThaiDuyet</td>
+                                    <td>@(tin.TrangThaiHienThi ? "Có" : "Không")</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-outline-primary" asp-action="EditPost" asp-route-id="@tin.MaPhong">Chỉnh sửa</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+

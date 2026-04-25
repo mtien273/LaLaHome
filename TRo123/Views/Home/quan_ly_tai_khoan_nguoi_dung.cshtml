@@ -1,0 +1,49 @@
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+@model List<TRo123.Models.TaiKhoanDto>
+
+<div class="member-layout">
+    @await Html.PartialAsync("_thanh_vien_sidebar")
+    <section class="member-content">
+        <div class="form-page full-width">
+            <h1>Quản lý tài khoản người dùng</h1>
+            <p>Danh sách tài khoản đăng ký trên hệ thống.</p>
+
+            <div class="table-responsive mt-4">
+                <table class="table table-bordered account-table">
+                    <thead>
+                        <tr>
+                            <th>Mã TV</th>
+                            <th>Họ tên</th>
+                            <th>Số điện thoại</th>
+                            <th>Vai trò</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || Model.Count == 0)
+                        {
+                            <tr><td colspan="5" class="text-center text-muted">Chưa có dữ liệu tài khoản.</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var tk in Model)
+                            {
+                                <tr>
+                                    <td>@tk.MaTaiKhoan</td>
+                                    <td>@tk.HoTen</td>
+                                    <td>@tk.SoDienThoai</td>
+                                    <td>@tk.VaiTro</td>
+                                    <td style="min-width: 200px;">
+                                        <a class="btn btn-sm btn-outline-primary" asp-action="AccountEdit" asp-route-id="@tk.MaTaiKhoan">Quản lý</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>

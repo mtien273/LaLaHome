@@ -1,0 +1,29 @@
+@model TRo123.Models.DangKyTaiKhoanViewModel
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="auth-page">
+    <h1>Tạo tài khoản mới</h1>
+    <form class="auth-form" asp-action="Register" asp-controller="Home" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+        <label class="form-label">Họ và tên</label>
+        <input class="form-control mb-1" asp-for="HoTen" placeholder="Nhập họ tên" />
+        <span asp-validation-for="HoTen" class="text-danger small"></span>
+        <label class="form-label">Số điện thoại</label>
+        <input class="form-control mb-1" asp-for="SoDienThoai" placeholder="Nhập số điện thoại" />
+        <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+        <label class="form-label">Mật khẩu</label>
+        <input type="password" class="form-control mb-1" asp-for="MatKhau" placeholder="Tạo mật khẩu" />
+        <span asp-validation-for="MatKhau" class="text-danger small"></span>
+        <label class="form-label">Bạn là</label>
+        <select class="form-select mb-1" asp-for="VaiTro">
+            <option value="NguoiDung">Người tìm kiếm phòng</option>
+            <option value="ChuTro">Người cho thuê (Chủ trọ)</option>
+        </select>
+        <span asp-validation-for="VaiTro" class="text-danger small"></span>
+        <button type="submit" class="btn btn-warning w-100 fw-semibold mt-3">Đăng ký</button>
+        <p class="mt-3 mb-0">Đã có tài khoản? <a asp-controller="Home" asp-action="Login">Đăng nhập</a></p>
+    </form>
+</div>

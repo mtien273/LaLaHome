@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TRo123", "TRo123\TRo123.csproj", "{CF6011F6-FAAB-33F3-A927-4DBE2ADFFBD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TRo123.Tests", "LaLaHome.Tests\TRo123.Tests.csproj", "{C379C2C7-A8DD-486A-BCB4-B3949DBCF98B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CF6011F6-FAAB-33F3-A927-4DBE2ADFFBD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF6011F6-FAAB-33F3-A927-4DBE2ADFFBD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF6011F6-FAAB-33F3-A927-4DBE2ADFFBD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF6011F6-FAAB-33F3-A927-4DBE2ADFFBD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C379C2C7-A8DD-486A-BCB4-B3949DBCF98B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C379C2C7-A8DD-486A-BCB4-B3949DBCF98B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C379C2C7-A8DD-486A-BCB4-B3949DBCF98B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C379C2C7-A8DD-486A-BCB4-B3949DBCF98B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5AA3EDAF-1F1C-4DB7-A195-B7F7A3D72F6F}
+	EndGlobalSection
+EndGlobal

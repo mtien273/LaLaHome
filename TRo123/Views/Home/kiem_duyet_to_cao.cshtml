@@ -1,0 +1,78 @@
+@{
+    ViewData["Title"] = "Quản lý tố cáo";
+}
+@model List<TRo123.Models.ToCaoChoDuyetDto>
+
+<div class="member-layout">
+    @await Html.PartialAsync("_thanh_vien_sidebar")
+    <section class="member-content">
+        <div class="form-page full-width">
+            <h1>Quản lý thông tin tố cáo</h1>
+            <p>Danh sách tố cáo đang chờ phê duyệt.</p>
+
+            <div class="table-responsive mt-4">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Mã tố cáo</th>
+                            <th>Bài viết</th>
+                            <th>Người tố cáo</th>
+                            <th>Lý do</th>
+                            <th>Nội dung</th>
+                            <th>Ngày</th>
+                            <th style="width:260px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || Model.Count == 0)
+                        {
+                            <tr><td colspan="7" class="text-center text-muted">Không có tố cáo nào đang chờ duyệt.</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var tc in Model)
+                            {
+                                <tr>
+                                    <td>@tc.MaToCao</td>
+                                    <td>
+                                        <div class="fw-semibold">@tc.TenPhongTro</div>
+                                        <a asp-controller="Home" asp-action="Detail" asp-route-id="@tc.MaPhong" class="small">@tc.MaPhong</a>
+                                    </td>
+                                    <td>@tc.MaTaiKhoanNguoiBaoCao</td>
+                                    <td>@tc.LoaiViPham</td>
+                                    <td>@(string.IsNullOrWhiteSpace(tc.NoiDung) ? "-" : tc.NoiDung)</td>
+                                    <td>@(tc.NgayTao?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <form method="post" asp-action="DeletePostFromReport" onsubmit="return confirm('Xóa bài đăng này khỏi hệ thống?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="maPhong" value="@tc.MaPhong" />
+                                                <button class="btn btn-sm btn-danger" type="submit">Xóa bài đăng</button>
+                                            </form>
+                                            <form method="post" asp-action="ApproveReport">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="maToCao" value="@tc.MaToCao" />
+                                                <button class="btn btn-sm btn-success" type="submit">Phê duyệt</button>
+                                            </form>
+                                            <form method="post" asp-action="RejectReport">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="maToCao" value="@tc.MaToCao" />
+                                                <button class="btn btn-sm btn-outline-danger" type="submit">Từ chối</button>
+                                            </form>
+                                            <form method="post" asp-action="DeleteReport" onsubmit="return confirm('Xóa tố cáo này?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="maToCao" value="@tc.MaToCao" />
+                                                <button class="btn btn-sm btn-outline-secondary" type="submit">Xóa</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+

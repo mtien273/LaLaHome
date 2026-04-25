@@ -1,0 +1,63 @@
+@model List<TRo123.Models.PhongTroItemViewModel>
+@{
+    ViewData["Title"] = "Danh sách tin";
+    var boLoc = ViewData["BoLoc"] as TRo123.Models.TimKiemPhongViewModel ?? new();
+    var loaiPhong = ViewData["LoaiPhong"] as List<TRo123.Models.LoaiPhongDto> ?? [];
+}
+
+<div class="page-heading">
+    <h1>Cho thuê phòng trọ</h1>
+    <p>Tổng hợp tin đăng mới nhất, đã được kiểm duyệt thông tin cơ bản.</p>
+</div>
+
+<form class="filter-bar" asp-controller="Home" asp-action="Listings" method="get">
+    <select name="maLoaiPhong">
+        <option value="">Loại phòng</option>
+        @foreach (var item in loaiPhong)
+        {
+            <option value="@item.MaLoaiPhong" selected="@(boLoc.MaLoaiPhong == item.MaLoaiPhong ? "selected" : null)">@item.TenLoaiPhong</option>
+        }
+    </select>
+    <input type="number" min="0" name="giaMin" value="@boLoc.GiaMin" placeholder="Giá từ" />
+    <input type="number" min="0" name="giaMax" value="@boLoc.GiaMax" placeholder="Giá đến" />
+    <input type="number" min="0" name="dienTichMin" value="@boLoc.DienTichMin" placeholder="DT từ" />
+    <input type="number" min="0" name="dienTichMax" value="@boLoc.DienTichMax" placeholder="DT đến" />
+    <button type="submit" class="btn btn-danger">Lọc tin</button>
+</form>
+
+<div class="content-grid mt-3">
+    <div class="left-col">
+        @if (Model.Count == 0)
+        {
+            <div class="side-card">
+                <p>Chưa có dữ liệu phòng trong SQL Server.</p>
+            </div>
+        }
+        @foreach (var item in Model)
+        {
+            <article class="post-card">
+                <img src="@(string.IsNullOrWhiteSpace(item.DuongDanAnh) ? "https://picsum.photos/seed/list-default/220/150" : item.DuongDanAnh)" alt="tin @item.MaPhong" />
+                <div>
+                    <h3><a asp-controller="Home" asp-action="Detail" asp-route-id="@item.MaPhong">@item.TenPhong - mã #@item.MaPhong</a></h3>
+                    <div class="post-meta">
+                        <span class="price">@item.GiaPhong.ToString("N0") đ/tháng</span>
+                        <span>@item.DienTich m2</span>
+                        <span>@item.DiaChiDayDu</span>
+                    </div>
+                    <p>Liên hệ: @item.SoDienThoai</p>
+                </div>
+            </article>
+        }
+    </div>
+    <aside class="right-col">
+        <div class="side-card">
+            <h4>Xem theo khoảng giá</h4>
+            <ul>
+                <li><a asp-action="Listings" asp-route-giaMax="2000000">Dưới 2 triệu</a></li>
+                <li><a asp-action="Listings" asp-route-giaMin="2000000" asp-route-giaMax="3000000">2 - 3 triệu</a></li>
+                <li><a asp-action="Listings" asp-route-giaMin="3000000" asp-route-giaMax="5000000">3 - 5 triệu</a></li>
+                <li><a asp-action="Listings" asp-route-giaMin="5000000">Trên 5 triệu</a></li>
+            </ul>
+        </div>
+    </aside>
+</div>

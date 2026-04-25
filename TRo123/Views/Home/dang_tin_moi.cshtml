@@ -1,0 +1,172 @@
+@{
+    ViewData["Title"] = "Đăng tin mới";
+}
+@model TRo123.Models.TaoTinPhongViewModel
+
+@{
+    var loaiPhong = ViewData["LoaiPhong"] as List<TRo123.Models.LoaiPhongDto> ?? [];
+    var tinhThanhPho = ViewData["TinhThanhPho"] as List<TRo123.Models.TinhThanhPhoDto> ?? [];
+    var quanHuyen = ViewData["QuanHuyen"] as List<TRo123.Models.QuanHuyenDto> ?? [];
+    var xaPhuong = ViewData["XaPhuong"] as List<TRo123.Models.XaPhuongDto> ?? [];
+}
+
+<div class="member-layout">
+    @await Html.PartialAsync("_thanh_vien_sidebar")
+    <section class="member-content">
+        <div class="form-page full-width">
+            <h1>Đăng tin mới</h1>
+
+            <form class="post-form" method="post" asp-action="CreatePost" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                <input type="hidden" asp-for="MaPhong" />
+                <input type="hidden" asp-for="MaTaiKhoan" />
+                <h3 class="section-head">Địa chỉ cho thuê</h3>
+                <div class="row g-3 align-items-start">
+                    <div class="col-lg-8">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Tỉnh/Thành phố</label>
+                                <select class="form-select" asp-for="MaTinhThanhPho" id="selTinh">
+                                    <option value="">-Chọn Tỉnh/TP-</option>
+                                    @foreach (var item in tinhThanhPho)
+                                    {
+                                        <option value="@item.MaTinhThanhPho">@item.TenTinhThanhPho</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="MaTinhThanhPho" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Quận/Huyện</label>
+                                <select class="form-select" asp-for="MaQuanHuyen" id="selQuan">
+                                    <option value="">-Chọn Quận/Huyện-</option>
+                                    @foreach (var item in quanHuyen)
+                                    {
+                                        <option value="@item.MaQuanHuyen">@item.TenQuanHuyen</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="MaQuanHuyen" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Phường/Xã</label>
+                                <select class="form-select" asp-for="MaXaPhuong" id="selXa">
+                                    <option value="">-Chọn Phường/Xã-</option>
+                                    @foreach (var item in xaPhuong)
+                                    {
+                                        <option value="@item.MaXaPhuong">@item.TenXaPhuong</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Địa chỉ cụ thể</label>
+                                <input class="form-control" asp-for="DiaChiChiTiet" placeholder="-Nhập địa chỉ cụ thể-" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="map-box">Bản đồ vị trí</div>
+                    </div>
+                </div>
+
+                <h3 class="section-head mt-4">Thông tin mô tả</h3>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Loại hình cho thuê</label>
+                        <select class="form-select" asp-for="MaLoaiPhong">
+                            <option value="">-Chọn loại hình-</option>
+                            @foreach (var item in loaiPhong)
+                            {
+                                <option value="@item.MaLoaiPhong">@item.TenLoaiPhong</option>
+                            }
+                        </select>
+                        <span asp-validation-for="MaLoaiPhong" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tên người đăng</label>
+                        <input class="form-control" value="@(Context.Session.GetString("MaTaiKhoan") ?? "")" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input class="form-control" asp-for="SoDienThoai" />
+                        <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tiêu đề</label>
+                        <input class="form-control" asp-for="TenPhongTro" />
+                        <span asp-validation-for="TenPhongTro" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Giá cho thuê</label>
+                        <input class="form-control" asp-for="GiaPhong" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Diện tích</label>
+                        <input class="form-control" asp-for="DienTich" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Giá điện - nước</label>
+                        <input class="form-control" placeholder="Giá điện" asp-for="GiaDien" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Các phí dịch vụ (nếu có)</label>
+                        <input class="form-control" placeholder="Giá nước" asp-for="GiaNuoc" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Hình ảnh/Video</label>
+                        <input type="file" name="anhPhong" class="form-control" accept="image/*" />
+                        <small class="text-muted">Chấp nhận: JPG, PNG, GIF (tối đa 5MB)</small>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-danger px-5">Tiếp tục</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        async function fetchJson(url) {
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (!res.ok) return [];
+            return await res.json();
+        }
+
+        function fillSelect(sel, items, valueKey, textKey, placeholder) {
+            const current = sel.value;
+            sel.innerHTML = '';
+            const opt0 = document.createElement('option');
+            opt0.value = '';
+            opt0.textContent = placeholder;
+            sel.appendChild(opt0);
+            for (const it of items) {
+                const opt = document.createElement('option');
+                opt.value = it[valueKey];
+                opt.textContent = it[textKey];
+                sel.appendChild(opt);
+            }
+            if (current) sel.value = current;
+        }
+
+        const selTinh = document.getElementById('selTinh');
+        const selQuan = document.getElementById('selQuan');
+        const selXa = document.getElementById('selXa');
+
+        selTinh?.addEventListener('change', async () => {
+            const maTinh = selTinh.value;
+            const dsQuan = maTinh ? await fetchJson(`@Url.Action("QuanHuyen","Home")?maTinh=${encodeURIComponent(maTinh)}`) : [];
+            // ASP.NET mặc định serialize camelCase: maQuanHuyen, tenQuanHuyen...
+            fillSelect(selQuan, dsQuan, 'maQuanHuyen', 'tenQuanHuyen', '-Chọn Quận/Huyện-');
+            fillSelect(selXa, [], 'maXaPhuong', 'tenXaPhuong', '-Chọn Phường/Xã-');
+        });
+
+        selQuan?.addEventListener('change', async () => {
+            const maQuan = selQuan.value;
+            const dsXa = maQuan ? await fetchJson(`@Url.Action("XaPhuong","Home")?maQuan=${encodeURIComponent(maQuan)}`) : [];
+            fillSelect(selXa, dsXa, 'maXaPhuong', 'tenXaPhuong', '-Chọn Phường/Xã-');
+        });
+    </script>
+}

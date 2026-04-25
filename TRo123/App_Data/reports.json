@@ -1,0 +1,20 @@
+[
+  {
+    "MaToCao": "TC00000001",
+    "MaPhong": "P0011",
+    "MaTaiKhoanNguoiBaoCao": "TK0007",
+    "LoaiViPham": "\u0110\u0103ng n\u1ED9i dung kh\u00F4ng ph\u00F9 h\u1EE3p",
+    "NoiDung": null,
+    "NgayTao": "2026-04-20T11:25:07.2661981Z",
+    "MaKiemDuyet": "KD001"
+  },
+  {
+    "MaToCao": "TC00000002",
+    "MaPhong": "P0011",
+    "MaTaiKhoanNguoiBaoCao": "TK0008",
+    "LoaiViPham": "L\u1EEBa \u0111\u1EA3o",
+    "NoiDung": null,
+    "NgayTao": "2026-04-20T11:32:05.771315Z",
+    "MaKiemDuyet": "KD001"
+  }
+]
