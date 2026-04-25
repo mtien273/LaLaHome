@@ -8,7 +8,7 @@
     <section class="member-content">
         <div class="form-page full-width">
             <h1>Quản lý thông tin tố cáo</h1>
-            <p>Danh sách tố cáo đang chờ phê duyệt.</p>
+            <p>Danh sách tố cáo đã gửi (gồm cả chờ duyệt / đã duyệt / từ chối).</p>
 
             <div class="table-responsive mt-4">
                 <table class="table table-bordered align-middle">
@@ -20,13 +20,14 @@
                             <th>Lý do</th>
                             <th>Nội dung</th>
                             <th>Ngày</th>
+                            <th>Trạng thái</th>
                             <th style="width:260px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (Model == null || Model.Count == 0)
                         {
-                            <tr><td colspan="7" class="text-center text-muted">Không có tố cáo nào đang chờ duyệt.</td></tr>
+                            <tr><td colspan="8" class="text-center text-muted">Chưa có tố cáo nào.</td></tr>
                         }
                         else
                         {
@@ -42,6 +43,7 @@
                                     <td>@tc.LoaiViPham</td>
                                     <td>@(string.IsNullOrWhiteSpace(tc.NoiDung) ? "-" : tc.NoiDung)</td>
                                     <td>@(tc.NgayTao?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                    <td>@tc.TrangThaiDuyet</td>
                                     <td>
                                         <div class="d-flex flex-wrap gap-2">
                                             <form method="post" asp-action="DeletePostFromReport" onsubmit="return confirm('Xóa bài đăng này khỏi hệ thống?');">
@@ -49,16 +51,19 @@
                                                 <input type="hidden" name="maPhong" value="@tc.MaPhong" />
                                                 <button class="btn btn-sm btn-danger" type="submit">Xóa bài đăng</button>
                                             </form>
-                                            <form method="post" asp-action="ApproveReport">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="maToCao" value="@tc.MaToCao" />
-                                                <button class="btn btn-sm btn-success" type="submit">Phê duyệt</button>
-                                            </form>
-                                            <form method="post" asp-action="RejectReport">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="maToCao" value="@tc.MaToCao" />
-                                                <button class="btn btn-sm btn-outline-danger" type="submit">Từ chối</button>
-                                            </form>
+                                            @if (string.Equals(tc.MaKiemDuyet, "KD002", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <form method="post" asp-action="ApproveReport">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="maToCao" value="@tc.MaToCao" />
+                                                    <button class="btn btn-sm btn-success" type="submit">Phê duyệt</button>
+                                                </form>
+                                                <form method="post" asp-action="RejectReport">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="maToCao" value="@tc.MaToCao" />
+                                                    <button class="btn btn-sm btn-outline-danger" type="submit">Từ chối</button>
+                                                </form>
+                                            }
                                             <form method="post" asp-action="DeleteReport" onsubmit="return confirm('Xóa tố cáo này?');">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="maToCao" value="@tc.MaToCao" />

@@ -19,6 +19,15 @@ namespace TRo123.Controllers
         private string? CurrentUserId => HttpContext.Session.GetString(SessionMaTaiKhoan);
         private string? CurrentRole => HttpContext.Session.GetString(SessionVaiTro);
 
+        private void SetFlash(string key, string message)
+        {
+            // TempData được MVC gán khi chạy qua pipeline; unit test có thể không set.
+            if (TempData is not null)
+            {
+                TempData[key] = message;
+            }
+        }
+
         public async Task<IActionResult> Index()
         {
             var dsPhong = await repository.LayDanhSachPhongAsync(6);
@@ -361,7 +370,7 @@ namespace TRo123.Controllers
         {
             if (string.IsNullOrWhiteSpace(CurrentUserId))
             {
-                TempData["ErrorMessage"] = "Vui lòng đăng nhập.";
+                SetFlash("ErrorMessage", "Vui lòng đăng nhập.");
                 return RedirectToAction(nameof(Login));
             }
             if (!string.Equals(CurrentRole, "ChuTro", StringComparison.OrdinalIgnoreCase))
@@ -626,6 +635,144 @@ namespace TRo123.Controllers
             await repository.XoaPhongAsync(maPhong);
             TempData["SuccessMessage"] = $"Đã xóa bài đăng {maPhong} và các tố cáo liên quan.";
             return RedirectToAction(nameof(ReportManagement));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeletePost(string maPhong)
+        {
+            if (string.IsNullOrWhiteSpace(CurrentUserId))
+            {
+                SetFlash("ErrorMessage", "Vui lòng đăng nhập.");
+                return RedirectToAction(nameof(Login));
+            }
+
+            var laQuanTri = string.Equals(CurrentRole, "QuanTri", StringComparison.OrdinalIgnoreCase);
+            var laChuTro = string.Equals(CurrentRole, "ChuTro", StringComparison.OrdinalIgnoreCase);
+            if (!laQuanTri && !laChuTro)
+            {
+                SetFlash("ErrorMessage", "Bạn không có quyền xóa tin đăng.");
+                return RedirectToAction(nameof(Index));
+            }
+
+            var chuPhong = await repository.LayChuPhongTheoMaPhongAsync(maPhong);
+            if (!laQuanTri && !string.Equals(chuPhong, CurrentUserId, StringComparison.OrdinalIgnoreCase))
+            {
+                SetFlash("ErrorMessage", "Bạn không có quyền xóa tin này.");
+                return RedirectToAction(nameof(Detail), new { id = maPhong });
+            }
+
+            await repository.XoaPhongAsync(maPhong);
+            SetFlash("SuccessMessage", $"Đã xóa bài đăng {maPhong}.");
+            return laQuanTri
+                ? RedirectToAction(nameof(Moderation))
+                : RedirectToAction(nameof(MyPosts));
+        }
+
+        public IActionResult EditMyReport(string maToCao)
+        {
+            return RedirectToAction(nameof(EditMyReportForm), new { maToCao });
+        }
+
+        public async Task<IActionResult> EditMyReportForm(string maToCao)
+        {
+            if (string.IsNullOrWhiteSpace(CurrentUserId))
+            {
+                SetFlash("ErrorMessage", "Vui lòng đăng nhập.");
+                return RedirectToAction(nameof(Login));
+            }
+            if (!string.Equals(CurrentRole, "NguoiDung", StringComparison.OrdinalIgnoreCase))
+            {
+                SetFlash("ErrorMessage", "Chỉ người dùng tìm phòng mới có chức năng này.");
+                return RedirectToAction(nameof(Index));
+            }
+
+            var tc = await repository.LayToCaoTheoMaAsync(maToCao);
+            if (tc is null)
+            {
+                SetFlash("ErrorMessage", "Không tìm thấy tố cáo.");
+                return RedirectToAction(nameof(MyReports));
+            }
+            if (!string.Equals(tc.MaTaiKhoanNguoiBaoCao, CurrentUserId, StringComparison.OrdinalIgnoreCase))
+            {
+                SetFlash("ErrorMessage", "Bạn không có quyền sửa tố cáo này.");
+                return RedirectToAction(nameof(MyReports));
+            }
+            if (!string.Equals(tc.MaKiemDuyet, "KD002", StringComparison.OrdinalIgnoreCase))
+            {
+                SetFlash("ErrorMessage", "Tố cáo đã được xử lý, không thể chỉnh sửa.");
+                return RedirectToAction(nameof(MyReports));
+            }
+
+            ViewData["PostId"] = tc.MaPhong;
+            var model = new SuaToCaoViewModel
+            {
+                MaToCao = tc.MaToCao,
+                MaPhong = tc.MaPhong,
+                MaTaiKhoanNguoiBaoCao = tc.MaTaiKhoanNguoiBaoCao,
+                LoaiViPham = tc.LoaiViPham,
+                NoiDung = tc.NoiDung
+            };
+            return View("sua_to_cao", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditMyReport(SuaToCaoViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(CurrentUserId))
+            {
+                SetFlash("ErrorMessage", "Vui lòng đăng nhập.");
+                return RedirectToAction(nameof(Login));
+            }
+            if (!string.Equals(CurrentRole, "NguoiDung", StringComparison.OrdinalIgnoreCase))
+            {
+                SetFlash("ErrorMessage", "Chỉ người dùng tìm phòng mới có chức năng này.");
+                return RedirectToAction(nameof(Index));
+            }
+
+            model.MaTaiKhoanNguoiBaoCao = CurrentUserId;
+            if (!ModelState.IsValid)
+            {
+                ViewData["PostId"] = model.MaPhong;
+                return View("sua_to_cao", model);
+            }
+
+            var ok = await repository.CapNhatToCaoChoNguoiDungAsync(model.MaToCao, CurrentUserId, model.LoaiViPham, model.NoiDung);
+            if (!ok)
+            {
+                SetFlash("ErrorMessage", "Không thể cập nhật tố cáo (có thể tố cáo đã được duyệt/từ chối).");
+                return RedirectToAction(nameof(MyReports));
+            }
+
+            SetFlash("SuccessMessage", $"Đã cập nhật tố cáo {model.MaToCao}.");
+            return RedirectToAction(nameof(MyReports));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteMyReport(string maToCao)
+        {
+            if (string.IsNullOrWhiteSpace(CurrentUserId))
+            {
+                SetFlash("ErrorMessage", "Vui lòng đăng nhập.");
+                return RedirectToAction(nameof(Login));
+            }
+            if (!string.Equals(CurrentRole, "NguoiDung", StringComparison.OrdinalIgnoreCase))
+            {
+                SetFlash("ErrorMessage", "Chỉ người dùng tìm phòng mới có chức năng này.");
+                return RedirectToAction(nameof(Index));
+            }
+
+            var ok = await repository.XoaToCaoChoNguoiDungAsync(maToCao, CurrentUserId);
+            if (!ok)
+            {
+                SetFlash("ErrorMessage", "Không thể xóa tố cáo (có thể tố cáo đã được duyệt/từ chối).");
+                return RedirectToAction(nameof(MyReports));
+            }
+
+            SetFlash("SuccessMessage", $"Đã xóa tố cáo {maToCao}.");
+            return RedirectToAction(nameof(MyReports));
         }
 
         [HttpPost]

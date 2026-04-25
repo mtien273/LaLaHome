@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540">
+  <rect width="900" height="540" fill="#f1f3f5"/>
+  <rect x="170" y="120" width="560" height="300" rx="14" fill="#dee2e6"/>
+  <path d="M230 350l120-120 90 90 110-130 120 160H230z" fill="#adb5bd"/>
+  <circle cx="340" cy="220" r="28" fill="#ced4da"/>
+  <text x="450" y="465" text-anchor="middle" fill="#6c757d" font-family="Arial, sans-serif" font-size="30">
+    Khong co anh phong
+  </text>
+</svg>

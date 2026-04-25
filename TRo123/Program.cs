@@ -15,15 +15,6 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
-// Ensure report store exists so users can see it immediately
-var appDataDir = Path.Combine(app.Environment.ContentRootPath, "App_Data");
-Directory.CreateDirectory(appDataDir);
-var reportFile = Path.Combine(appDataDir, "reports.json");
-if (!File.Exists(reportFile))
-{
-    File.WriteAllText(reportFile, "[]");
-}
-
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {

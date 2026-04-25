@@ -1,15 +1,22 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace TRo123.Models;
 
-public class ToCaoChoDuyetDto
+public class SuaToCaoViewModel
 {
+    [Required]
     public string MaToCao { get; set; } = string.Empty;
+
+    [Required]
     public string MaPhong { get; set; } = string.Empty;
-    public string TenPhongTro { get; set; } = string.Empty;
+
+    [Required]
     public string MaTaiKhoanNguoiBaoCao { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Vui lòng chọn lý do tố cáo")]
     public string LoaiViPham { get; set; } = string.Empty;
+
+    [StringLength(500)]
     public string? NoiDung { get; set; }
-    public DateTime? NgayTao { get; set; }
-    public string MaKiemDuyet { get; set; } = "KD002";
-    public string TrangThaiDuyet { get; set; } = string.Empty;
 }
 

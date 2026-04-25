@@ -1,15 +1,10 @@
 using Microsoft.Data.SqlClient;
-using System.Text.Json;
 using TRo123.Models;
 
 namespace TRo123.Services;
 
 public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeRepository
 {
-    private static readonly SemaphoreSlim ReportLock = new(1, 1);
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
-    private static string ReportStorePath => Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "reports.json");
-
     private readonly string _connectionString = configuration.GetConnectionString("LaLaHomeDb")
         ?? throw new InvalidOperationException("Thiếu ConnectionStrings:LaLaHomeDb trong appsettings.json");
 
@@ -739,7 +734,6 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
             FROM tblPhong p
             LEFT JOIN tblTaiKhoan tk ON tk.PK_MaTaiKhoan = p.FK_MaTaiKhoan
             LEFT JOIN tblKiemDuyet kd ON kd.PK_MaKiemDuyet = p.FK_MaKiemDuyet
-            WHERE p.FK_MaKiemDuyet = N'KD002'
             ORDER BY p.dNgayDang DESC, p.PK_MaPhong DESC;
             """;
 
@@ -878,82 +872,231 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
 
     public async Task<string> TaoToCaoAsync(TaoToCaoViewModel model)
     {
-        await ReportLock.WaitAsync();
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var tx = conn.BeginTransaction();
         try
         {
-            var list = await ReadReportsAsync();
-            var maMoi = TaoMaToCaoMoi(list);
-            list.Add(new ReportRecord
-            {
-                MaToCao = maMoi,
-                MaPhong = model.MaPhong,
-                MaTaiKhoanNguoiBaoCao = model.MaTaiKhoanNguoiBaoCao,
-                LoaiViPham = model.LoaiViPham,
-                NoiDung = model.NoiDung,
-                NgayTao = DateTime.UtcNow,
-                MaKiemDuyet = "KD002"
-            });
-            await WriteReportsAsync(list);
+            var maMoi = await TaoMaToCaoMoiAsync(conn, tx);
+            const string sql = """
+                INSERT INTO dbo.tblToCao
+                    (PK_MaToCao, FK_MaPhong, FK_MaTaiKhoan, FK_MaKiemDuyet, sLoaiViPham, sNoiDung, dNgayTao)
+                VALUES
+                    (@MaToCao, @MaPhong, @MaTaiKhoan, N'KD002', @LoaiViPham, @NoiDung, CAST(GETDATE() AS DATE));
+                """;
+            await using var cmd = new SqlCommand(sql, conn, tx);
+            cmd.Parameters.AddWithValue("@MaToCao", maMoi);
+            cmd.Parameters.AddWithValue("@MaPhong", model.MaPhong);
+            cmd.Parameters.AddWithValue("@MaTaiKhoan", model.MaTaiKhoanNguoiBaoCao);
+            cmd.Parameters.AddWithValue("@LoaiViPham", model.LoaiViPham);
+            cmd.Parameters.AddWithValue("@NoiDung", (object?)model.NoiDung ?? DBNull.Value);
+            await cmd.ExecuteNonQueryAsync();
+            await tx.CommitAsync();
             return maMoi;
         }
-        finally
+        catch
         {
-            ReportLock.Release();
+            await tx.RollbackAsync();
+            throw;
         }
     }
 
     public async Task<List<ToCaoChoDuyetDto>> LayDanhSachToCaoChoDuyetAsync()
     {
-        var reports = await ReadReportsAsync();
-        var pending = reports
-            .Where(x => string.Equals(x.MaKiemDuyet, "KD002", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(x => x.NgayTao)
-            .ToList();
-        return await MapReportsAsync(pending);
+        const string sql = """
+            SELECT
+                tc.PK_MaToCao,
+                tc.FK_MaPhong,
+                ISNULL(p.sTenPhongTro, N'') AS sTenPhongTro,
+                tc.FK_MaTaiKhoan,
+                tc.FK_MaKiemDuyet,
+                tc.sLoaiViPham,
+                tc.sNoiDung,
+                tc.dNgayTao,
+                ISNULL(kd.sTrangThaiDuyet, N'') AS sTrangThaiDuyet
+            FROM dbo.tblToCao tc
+            LEFT JOIN dbo.tblPhong p ON p.PK_MaPhong = tc.FK_MaPhong
+            LEFT JOIN dbo.tblKiemDuyet kd ON kd.PK_MaKiemDuyet = tc.FK_MaKiemDuyet
+            ORDER BY
+                CASE WHEN tc.FK_MaKiemDuyet = N'KD002' THEN 0 ELSE 1 END,
+                tc.dNgayTao DESC,
+                tc.PK_MaToCao DESC;
+            """;
+
+        var result = new List<ToCaoChoDuyetDto>();
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            result.Add(new ToCaoChoDuyetDto
+            {
+                MaToCao = reader["PK_MaToCao"]?.ToString() ?? string.Empty,
+                MaPhong = reader["FK_MaPhong"]?.ToString() ?? string.Empty,
+                TenPhongTro = reader["sTenPhongTro"]?.ToString() ?? string.Empty,
+                MaTaiKhoanNguoiBaoCao = reader["FK_MaTaiKhoan"]?.ToString() ?? string.Empty,
+                LoaiViPham = reader["sLoaiViPham"]?.ToString() ?? string.Empty,
+                NoiDung = reader["sNoiDung"] == DBNull.Value ? null : reader["sNoiDung"]?.ToString(),
+                NgayTao = reader["dNgayTao"] == DBNull.Value ? null : Convert.ToDateTime(reader["dNgayTao"]),
+                MaKiemDuyet = reader["FK_MaKiemDuyet"]?.ToString() ?? "KD002",
+                TrangThaiDuyet = reader["sTrangThaiDuyet"]?.ToString() ?? string.Empty
+            });
+        }
+        return result;
     }
 
     public async Task<List<ToCaoChoDuyetDto>> LayDanhSachToCaoCuaToiAsync(string maTaiKhoan)
     {
-        var reports = await ReadReportsAsync();
-        var mine = reports
-            .Where(x => string.Equals(x.MaTaiKhoanNguoiBaoCao, maTaiKhoan, StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(x => x.NgayTao)
-            .ToList();
-        return await MapReportsAsync(mine);
+        const string sql = """
+            SELECT
+                tc.PK_MaToCao,
+                tc.FK_MaPhong,
+                ISNULL(p.sTenPhongTro, N'') AS sTenPhongTro,
+                tc.FK_MaTaiKhoan,
+                tc.FK_MaKiemDuyet,
+                tc.sLoaiViPham,
+                tc.sNoiDung,
+                tc.dNgayTao,
+                ISNULL(kd.sTrangThaiDuyet, N'') AS sTrangThaiDuyet
+            FROM dbo.tblToCao tc
+            LEFT JOIN dbo.tblPhong p ON p.PK_MaPhong = tc.FK_MaPhong
+            LEFT JOIN dbo.tblKiemDuyet kd ON kd.PK_MaKiemDuyet = tc.FK_MaKiemDuyet
+            WHERE tc.FK_MaTaiKhoan = @MaTaiKhoan
+            ORDER BY tc.dNgayTao DESC, tc.PK_MaToCao DESC;
+            """;
+
+        var result = new List<ToCaoChoDuyetDto>();
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaTaiKhoan", maTaiKhoan);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            result.Add(new ToCaoChoDuyetDto
+            {
+                MaToCao = reader["PK_MaToCao"]?.ToString() ?? string.Empty,
+                MaPhong = reader["FK_MaPhong"]?.ToString() ?? string.Empty,
+                TenPhongTro = reader["sTenPhongTro"]?.ToString() ?? string.Empty,
+                MaTaiKhoanNguoiBaoCao = reader["FK_MaTaiKhoan"]?.ToString() ?? string.Empty,
+                LoaiViPham = reader["sLoaiViPham"]?.ToString() ?? string.Empty,
+                NoiDung = reader["sNoiDung"] == DBNull.Value ? null : reader["sNoiDung"]?.ToString(),
+                NgayTao = reader["dNgayTao"] == DBNull.Value ? null : Convert.ToDateTime(reader["dNgayTao"]),
+                MaKiemDuyet = reader["FK_MaKiemDuyet"]?.ToString() ?? "KD002",
+                TrangThaiDuyet = reader["sTrangThaiDuyet"]?.ToString() ?? string.Empty
+            });
+        }
+        return result;
+    }
+
+    public async Task<ToCaoChoDuyetDto?> LayToCaoTheoMaAsync(string maToCao)
+    {
+        const string sql = """
+            SELECT TOP 1
+                tc.PK_MaToCao,
+                tc.FK_MaPhong,
+                ISNULL(p.sTenPhongTro, N'') AS sTenPhongTro,
+                tc.FK_MaTaiKhoan,
+                tc.FK_MaKiemDuyet,
+                tc.sLoaiViPham,
+                tc.sNoiDung,
+                tc.dNgayTao,
+                ISNULL(kd.sTrangThaiDuyet, N'') AS sTrangThaiDuyet
+            FROM dbo.tblToCao tc
+            LEFT JOIN dbo.tblPhong p ON p.PK_MaPhong = tc.FK_MaPhong
+            LEFT JOIN dbo.tblKiemDuyet kd ON kd.PK_MaKiemDuyet = tc.FK_MaKiemDuyet
+            WHERE tc.PK_MaToCao = @MaToCao;
+            """;
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaToCao", maToCao);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        return new ToCaoChoDuyetDto
+        {
+            MaToCao = reader["PK_MaToCao"]?.ToString() ?? string.Empty,
+            MaPhong = reader["FK_MaPhong"]?.ToString() ?? string.Empty,
+            TenPhongTro = reader["sTenPhongTro"]?.ToString() ?? string.Empty,
+            MaTaiKhoanNguoiBaoCao = reader["FK_MaTaiKhoan"]?.ToString() ?? string.Empty,
+            LoaiViPham = reader["sLoaiViPham"]?.ToString() ?? string.Empty,
+            NoiDung = reader["sNoiDung"] == DBNull.Value ? null : reader["sNoiDung"]?.ToString(),
+            NgayTao = reader["dNgayTao"] == DBNull.Value ? null : Convert.ToDateTime(reader["dNgayTao"]),
+            MaKiemDuyet = reader["FK_MaKiemDuyet"]?.ToString() ?? "KD002",
+            TrangThaiDuyet = reader["sTrangThaiDuyet"]?.ToString() ?? string.Empty
+        };
+    }
+
+    public async Task<bool> CapNhatToCaoChoNguoiDungAsync(string maToCao, string maTaiKhoanNguoiBaoCao, string loaiViPham, string? noiDung)
+    {
+        const string sql = """
+            UPDATE dbo.tblToCao
+            SET sLoaiViPham = @LoaiViPham,
+                sNoiDung = @NoiDung
+            WHERE PK_MaToCao = @MaToCao
+              AND FK_MaTaiKhoan = @MaTaiKhoan
+              AND FK_MaKiemDuyet = N'KD002';
+            """;
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaToCao", maToCao);
+        cmd.Parameters.AddWithValue("@MaTaiKhoan", maTaiKhoanNguoiBaoCao);
+        cmd.Parameters.AddWithValue("@LoaiViPham", loaiViPham);
+        cmd.Parameters.AddWithValue("@NoiDung", (object?)noiDung ?? DBNull.Value);
+        var affected = await cmd.ExecuteNonQueryAsync();
+        return affected > 0;
+    }
+
+    public async Task<bool> XoaToCaoChoNguoiDungAsync(string maToCao, string maTaiKhoanNguoiBaoCao)
+    {
+        const string sql = """
+            DELETE FROM dbo.tblToCao
+            WHERE PK_MaToCao = @MaToCao
+              AND FK_MaTaiKhoan = @MaTaiKhoan
+              AND FK_MaKiemDuyet = N'KD002';
+            """;
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaToCao", maToCao);
+        cmd.Parameters.AddWithValue("@MaTaiKhoan", maTaiKhoanNguoiBaoCao);
+        var affected = await cmd.ExecuteNonQueryAsync();
+        return affected > 0;
     }
 
     public async Task CapNhatTrangThaiDuyetToCaoAsync(string maToCao, string maKiemDuyet)
     {
-        await ReportLock.WaitAsync();
-        try
-        {
-            var list = await ReadReportsAsync();
-            var item = list.FirstOrDefault(x => string.Equals(x.MaToCao, maToCao, StringComparison.OrdinalIgnoreCase));
-            if (item is not null)
-            {
-                item.MaKiemDuyet = maKiemDuyet;
-                await WriteReportsAsync(list);
-            }
-        }
-        finally
-        {
-            ReportLock.Release();
-        }
+        const string sql = """
+            UPDATE dbo.tblToCao
+            SET FK_MaKiemDuyet = @MaKiemDuyet
+            WHERE PK_MaToCao = @MaToCao;
+            """;
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaToCao", maToCao);
+        cmd.Parameters.AddWithValue("@MaKiemDuyet", maKiemDuyet);
+        await cmd.ExecuteNonQueryAsync();
     }
 
     public async Task XoaToCaoAsync(string maToCao)
     {
-        await ReportLock.WaitAsync();
-        try
-        {
-            var list = await ReadReportsAsync();
-            list.RemoveAll(x => string.Equals(x.MaToCao, maToCao, StringComparison.OrdinalIgnoreCase));
-            await WriteReportsAsync(list);
-        }
-        finally
-        {
-            ReportLock.Release();
-        }
+        const string sql = "DELETE FROM dbo.tblToCao WHERE PK_MaToCao = @MaToCao;";
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaToCao", maToCao);
+        await cmd.ExecuteNonQueryAsync();
     }
 
     public async Task XoaPhongAsync(string maPhong)
@@ -964,6 +1107,7 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
 
         try
         {
+            await ExecAsync(conn, tx, "DELETE FROM dbo.tblToCao WHERE FK_MaPhong = @MaPhong;", ("@MaPhong", maPhong));
             await ExecAsync(conn, tx, "DELETE FROM tblPhong_DichVu WHERE PK_MaPhong = @MaPhong;", ("@MaPhong", maPhong));
             await ExecAsync(conn, tx, "DELETE FROM tblAnh WHERE FK_MaPhong = @MaPhong;", ("@MaPhong", maPhong));
             await ExecAsync(conn, tx, "DELETE FROM tblDiaChi WHERE FK_MaPhong = @MaPhong;", ("@MaPhong", maPhong));
@@ -974,18 +1118,6 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         {
             await tx.RollbackAsync();
             throw;
-        }
-
-        await ReportLock.WaitAsync();
-        try
-        {
-            var list = await ReadReportsAsync();
-            list.RemoveAll(x => string.Equals(x.MaPhong, maPhong, StringComparison.OrdinalIgnoreCase));
-            await WriteReportsAsync(list);
-        }
-        finally
-        {
-            ReportLock.Release();
         }
     }
 
@@ -1013,12 +1145,14 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
             // Xóa các bản ghi phụ thuộc theo phòng
             foreach (var maPhong in dsPhong.Where(x => !string.IsNullOrWhiteSpace(x)))
             {
+                await ExecAsync(conn, tx, "DELETE FROM dbo.tblToCao WHERE FK_MaPhong = @MaPhong;", ("@MaPhong", maPhong));
                 await ExecAsync(conn, tx, "DELETE FROM tblPhong_DichVu WHERE PK_MaPhong = @MaPhong;", ("@MaPhong", maPhong));
                 await ExecAsync(conn, tx, "DELETE FROM tblAnh WHERE FK_MaPhong = @MaPhong;", ("@MaPhong", maPhong));
                 await ExecAsync(conn, tx, "DELETE FROM tblDiaChi WHERE FK_MaPhong = @MaPhong;", ("@MaPhong", maPhong));
                 await ExecAsync(conn, tx, "DELETE FROM tblPhong WHERE PK_MaPhong = @MaPhong;", ("@MaPhong", maPhong));
             }
 
+            await ExecAsync(conn, tx, "DELETE FROM dbo.tblToCao WHERE FK_MaTaiKhoan = @MaTaiKhoan;", ("@MaTaiKhoan", maTaiKhoan));
             // Xóa tài khoản
             await ExecAsync(conn, tx, "DELETE FROM tblTaiKhoan WHERE PK_MaTaiKhoan = @MaTaiKhoan;", ("@MaTaiKhoan", maTaiKhoan));
 
@@ -1028,20 +1162,6 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         {
             await tx.RollbackAsync();
             throw;
-        }
-
-        await ReportLock.WaitAsync();
-        try
-        {
-            var list = await ReadReportsAsync();
-            list.RemoveAll(x =>
-                string.Equals(x.MaTaiKhoanNguoiBaoCao, maTaiKhoan, StringComparison.OrdinalIgnoreCase) ||
-                dsPhong.Any(p => string.Equals(p, x.MaPhong, StringComparison.OrdinalIgnoreCase)));
-            await WriteReportsAsync(list);
-        }
-        finally
-        {
-            ReportLock.Release();
         }
     }
 
@@ -1055,42 +1175,27 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         await cmd.ExecuteNonQueryAsync();
     }
 
-    private static string TaoMaToCaoMoi(List<ReportRecord> list)
+    private static async Task<string> TaoMaToCaoMoiAsync(SqlConnection conn, SqlTransaction tx)
     {
-        var maCuoi = list
-            .Select(x => x.MaToCao)
-            .Where(x => !string.IsNullOrWhiteSpace(x) && x.StartsWith("TC", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(x => x)
-            .FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(maCuoi))
-        {
-            return "TC00000001";
-        }
-
-        var so = 0;
-        _ = int.TryParse(maCuoi.Replace("TC", string.Empty), out so);
-        return $"TC{(so + 1):D8}";
+        const string sql = """
+            SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(PK_MaToCao, 3, LEN(PK_MaToCao) - 2))), 0)
+            FROM dbo.tblToCao WITH (UPDLOCK, HOLDLOCK)
+            WHERE PK_MaToCao LIKE 'TC%';
+            """;
+        await using var cmd = new SqlCommand(sql, conn, tx);
+        var soLonNhat = Convert.ToInt32(await cmd.ExecuteScalarAsync() ?? 0);
+        return $"TC{(soLonNhat + 1):D8}";
     }
 
-    private async Task<List<ToCaoChoDuyetDto>> MapReportsAsync(List<ReportRecord> reports)
+    public async Task<string?> LayChuPhongTheoMaPhongAsync(string maPhong)
     {
-        var mapTenPhong = await LayMapTenPhongAsync();
-        return reports.Select(x => new ToCaoChoDuyetDto
-        {
-            MaToCao = x.MaToCao,
-            MaPhong = x.MaPhong,
-            TenPhongTro = mapTenPhong.TryGetValue(x.MaPhong, out var ten) ? ten : x.MaPhong,
-            MaTaiKhoanNguoiBaoCao = x.MaTaiKhoanNguoiBaoCao,
-            LoaiViPham = x.LoaiViPham,
-            NoiDung = x.NoiDung,
-            NgayTao = x.NgayTao,
-            TrangThaiDuyet = x.MaKiemDuyet switch
-            {
-                "KD001" => "Đã duyệt",
-                "KD003" => "Từ chối",
-                _ => "Chờ duyệt"
-            }
-        }).ToList();
+        const string sql = "SELECT TOP 1 FK_MaTaiKhoan FROM tblPhong WHERE PK_MaPhong = @MaPhong;";
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+        var result = await cmd.ExecuteScalarAsync();
+        return result == null || result == DBNull.Value ? null : result.ToString();
     }
 
     private async Task<Dictionary<string, string>> LayMapTenPhongAsync()
@@ -1113,42 +1218,4 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         return result;
     }
 
-    private static async Task<List<ReportRecord>> ReadReportsAsync()
-    {
-        if (!File.Exists(ReportStorePath))
-        {
-            return [];
-        }
-
-        var json = await File.ReadAllTextAsync(ReportStorePath);
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return [];
-        }
-
-        return JsonSerializer.Deserialize<List<ReportRecord>>(json, JsonOptions) ?? [];
-    }
-
-    private static async Task WriteReportsAsync(List<ReportRecord> list)
-    {
-        var dir = Path.GetDirectoryName(ReportStorePath);
-        if (!string.IsNullOrWhiteSpace(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
-
-        var json = JsonSerializer.Serialize(list, JsonOptions);
-        await File.WriteAllTextAsync(ReportStorePath, json);
-    }
-
-    private class ReportRecord
-    {
-        public string MaToCao { get; set; } = string.Empty;
-        public string MaPhong { get; set; } = string.Empty;
-        public string MaTaiKhoanNguoiBaoCao { get; set; } = string.Empty;
-        public string LoaiViPham { get; set; } = string.Empty;
-        public string? NoiDung { get; set; }
-        public DateTime NgayTao { get; set; }
-        public string MaKiemDuyet { get; set; } = "KD002";
-    }
 }

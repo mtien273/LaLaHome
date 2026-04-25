@@ -8,7 +8,7 @@
     <section class="member-content">
         <div class="form-page full-width">
             <h1>Kiểm duyệt tin đăng</h1>
-            <p>Danh sách tin do chủ trọ gửi lên (chờ duyệt).</p>
+            <p>Danh sách tin đã đăng (gồm cả chờ duyệt / đã duyệt / từ chối).</p>
 
             <div class="table-responsive mt-4">
                 <table class="table table-bordered align-middle">
@@ -21,13 +21,14 @@
                             <th>Giá</th>
                             <th>Diện tích</th>
                             <th>Ngày đăng</th>
+                            <th>Trạng thái</th>
                             <th style="width:220px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (Model == null || Model.Count == 0)
                         {
-                            <tr><td colspan="8" class="text-center text-muted">Không có tin nào đang chờ duyệt.</td></tr>
+                            <tr><td colspan="9" class="text-center text-muted">Chưa có tin nào.</td></tr>
                         }
                         else
                         {
@@ -47,17 +48,27 @@
                                     <td>@($"{tin.GiaPhong:N0}")</td>
                                     <td>@($"{tin.DienTich:N0} m²")</td>
                                     <td>@(tin.NgayDang?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                    <td>@tin.TrangThaiDuyet</td>
                                     <td>
                                         <div class="d-flex flex-wrap gap-2">
-                                            <form method="post" asp-action="ApprovePost">
+                                            @if (!string.IsNullOrWhiteSpace(tin.TrangThaiDuyet) &&
+                                                tin.TrangThaiDuyet.Contains("Chờ", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <form method="post" asp-action="ApprovePost">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="maPhong" value="@tin.MaPhong" />
+                                                    <button class="btn btn-sm btn-success" type="submit">Duyệt</button>
+                                                </form>
+                                                <form method="post" asp-action="RejectPost">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="maPhong" value="@tin.MaPhong" />
+                                                    <button class="btn btn-sm btn-outline-danger" type="submit">Từ chối</button>
+                                                </form>
+                                            }
+                                            <form method="post" asp-action="DeletePost" onsubmit="return confirm('Xóa tin đăng này khỏi hệ thống?');">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="maPhong" value="@tin.MaPhong" />
-                                                <button class="btn btn-sm btn-success" type="submit">Duyệt</button>
-                                            </form>
-                                            <form method="post" asp-action="RejectPost">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="maPhong" value="@tin.MaPhong" />
-                                                <button class="btn btn-sm btn-outline-danger" type="submit">Từ chối</button>
+                                                <button class="btn btn-sm btn-outline-secondary" type="submit">Xóa</button>
                                             </form>
                                         </div>
                                     </td>

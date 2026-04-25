@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="TRo123/TRo123.csproj" />
+  <Project Path="TRo123.Tests/TRo123.Tests.csproj" />
 </Solution>

@@ -20,12 +20,13 @@
                             <th>Nội dung</th>
                             <th>Ngày gửi</th>
                             <th>Trạng thái</th>
+                            <th style="width:220px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (Model == null || Model.Count == 0)
                         {
-                            <tr><td colspan="6" class="text-center text-muted">Bạn chưa gửi tố cáo nào.</td></tr>
+                            <tr><td colspan="7" class="text-center text-muted">Bạn chưa gửi tố cáo nào.</td></tr>
                         }
                         else
                         {
@@ -41,6 +42,27 @@
                                     <td>@(string.IsNullOrWhiteSpace(tc.NoiDung) ? "-" : tc.NoiDung)</td>
                                     <td>@(tc.NgayTao?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
                                     <td>@tc.TrangThaiDuyet</td>
+                                    <td>
+                                        @if (string.Equals(tc.MaKiemDuyet, "KD002", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <a class="btn btn-sm btn-outline-primary"
+                                                   asp-controller="Home"
+                                                   asp-action="EditMyReport"
+                                                   asp-route-maToCao="@tc.MaToCao">Sửa</a>
+                                                <form method="post" asp-controller="Home" asp-action="DeleteMyReport"
+                                                      onsubmit="return confirm('Xóa tố cáo này?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="maToCao" value="@tc.MaToCao" />
+                                                    <button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">-</span>
+                                        }
+                                    </td>
                                 </tr>
                             }
                         }

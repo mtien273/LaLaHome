@@ -21,7 +21,7 @@
                             <th>Ngày đăng</th>
                             <th>Trạng thái duyệt</th>
                             <th>Hiển thị</th>
-                            <th style="width:120px;">Thao tác</th>
+                            <th style="width:220px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,7 +45,14 @@
                                     <td>@tin.TrangThaiDuyet</td>
                                     <td>@(tin.TrangThaiHienThi ? "Có" : "Không")</td>
                                     <td>
-                                        <a class="btn btn-sm btn-outline-primary" asp-action="EditPost" asp-route-id="@tin.MaPhong">Chỉnh sửa</a>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <a class="btn btn-sm btn-outline-primary" asp-action="EditPost" asp-route-id="@tin.MaPhong">Chỉnh sửa</a>
+                                            <form method="post" asp-action="DeletePost" onsubmit="return confirm('Xóa tin đăng này khỏi hệ thống?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="maPhong" value="@tin.MaPhong" />
+                                                <button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             }

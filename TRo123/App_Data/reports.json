@@ -16,5 +16,23 @@
     "NoiDung": null,
     "NgayTao": "2026-04-20T11:32:05.771315Z",
     "MaKiemDuyet": "KD001"
+  },
+  {
+    "MaToCao": "TC00000003",
+    "MaPhong": "P0016",
+    "MaTaiKhoanNguoiBaoCao": "TK0007",
+    "LoaiViPham": "L\u1EEBa \u0111\u1EA3o",
+    "NoiDung": null,
+    "NgayTao": "2026-04-24T07:38:58.6781898Z",
+    "MaKiemDuyet": "KD002"
+  },
+  {
+    "MaToCao": "TC00000004",
+    "MaPhong": "P0010",
+    "MaTaiKhoanNguoiBaoCao": "TK0005",
+    "LoaiViPham": "\u0110\u0103ng n\u1ED9i dung kh\u00F4ng ph\u00F9 h\u1EE3p",
+    "NoiDung": null,
+    "NgayTao": "2026-04-25T19:46:16.8961131Z",
+    "MaKiemDuyet": "KD002"
   }
 ]

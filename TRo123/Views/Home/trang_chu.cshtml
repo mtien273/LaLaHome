@@ -39,7 +39,9 @@
         @foreach (var item in Model)
         {
             <article class="post-card">
-                <img src="@(string.IsNullOrWhiteSpace(item.DuongDanAnh) ? "https://picsum.photos/seed/tro-default/220/150" : item.DuongDanAnh)" alt="phong @item.MaPhong" />
+                <img src="@(string.IsNullOrWhiteSpace(item.DuongDanAnh) ? "/images/room-placeholder.svg" : item.DuongDanAnh)"
+                     onerror="this.onerror=null;this.src='/images/room-placeholder.svg';"
+                     alt="phong @item.MaPhong" />
                 <div>
                     <h3>
                         <a asp-controller="Home" asp-action="Detail" asp-route-id="@item.MaPhong">@item.TenPhong - mã #@item.MaPhong</a>

@@ -33,9 +33,13 @@ public interface ILaLaHomeRepository
     Task<string> TaoToCaoAsync(TaoToCaoViewModel model);
     Task<List<ToCaoChoDuyetDto>> LayDanhSachToCaoChoDuyetAsync();
     Task<List<ToCaoChoDuyetDto>> LayDanhSachToCaoCuaToiAsync(string maTaiKhoan);
+    Task<ToCaoChoDuyetDto?> LayToCaoTheoMaAsync(string maToCao);
+    Task<bool> CapNhatToCaoChoNguoiDungAsync(string maToCao, string maTaiKhoanNguoiBaoCao, string loaiViPham, string? noiDung);
+    Task<bool> XoaToCaoChoNguoiDungAsync(string maToCao, string maTaiKhoanNguoiBaoCao);
     Task CapNhatTrangThaiDuyetToCaoAsync(string maToCao, string maKiemDuyet);
     Task XoaToCaoAsync(string maToCao);
     Task XoaPhongAsync(string maPhong);
+    Task<string?> LayChuPhongTheoMaPhongAsync(string maPhong);
 
     Task XoaTaiKhoanAsync(string maTaiKhoan);
 

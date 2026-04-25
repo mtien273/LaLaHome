@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Sửa tố cáo";
+    var postId = ViewData["PostId"]?.ToString() ?? string.Empty;
+}
+@model TRo123.Models.SuaToCaoViewModel
+
+<div class="member-layout">
+    @await Html.PartialAsync("_thanh_vien_sidebar")
+    <section class="member-content">
+        <div class="form-page">
+            <h1>Sửa tố cáo</h1>
+            <p>Bạn chỉ có thể sửa tố cáo khi quản trị viên chưa duyệt.</p>
+
+            <div class="alert alert-light border">
+                <div><strong>Mã tố cáo:</strong> @Model.MaToCao</div>
+                <div><strong>Bài viết:</strong> <a asp-controller="Home" asp-action="Detail" asp-route-id="@Model.MaPhong">@(!string.IsNullOrWhiteSpace(postId) ? postId : Model.MaPhong)</a></div>
+            </div>
+
+            <form method="post" asp-action="EditMyReport">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="MaToCao" />
+                <input type="hidden" asp-for="MaPhong" />
+                <input type="hidden" asp-for="MaTaiKhoanNguoiBaoCao" />
+
+                <div class="mb-3">
+                    <label class="form-label">Lý do vi phạm</label>
+                    <select class="form-select" asp-for="LoaiViPham">
+                        <option value="">-- Chọn lý do --</option>
+                        <option value="Tin giả / lừa đảo">Tin giả / lừa đảo</option>
+                        <option value="Thông tin sai sự thật">Thông tin sai sự thật</option>
+                        <option value="Giá không đúng / mập mờ">Giá không đúng / mập mờ</option>
+                        <option value="Hình ảnh không phù hợp">Hình ảnh không phù hợp</option>
+                        <option value="Trùng lặp / spam">Trùng lặp / spam</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                    <span class="text-danger small" asp-validation-for="LoaiViPham"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nội dung</label>
+                    <textarea class="form-control" asp-for="NoiDung" rows="5" placeholder="Mô tả thêm (tối đa 500 ký tự)"></textarea>
+                    <span class="text-danger small" asp-validation-for="NoiDung"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
+                    <a class="btn btn-outline-secondary" asp-action="MyReports">Quay lại</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
