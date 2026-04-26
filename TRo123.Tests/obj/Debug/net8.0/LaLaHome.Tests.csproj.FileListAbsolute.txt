@@ -1,0 +1,7 @@
+C:\Users\admin\Downloads\LaLaHome-master\LaLaHome.Tests\bin\Debug\net8.0\CoverletSourceRootsMapping_LaLaHome.Tests
+C:\Users\admin\Downloads\LaLaHome-master\LaLaHome.Tests\obj\Debug\net8.0\LaLaHome.Tests.csproj.AssemblyReference.cache
+C:\Users\admin\Downloads\LaLaHome-master\LaLaHome.Tests\obj\Debug\net8.0\LaLaHome.Tests.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\admin\Downloads\LaLaHome-master\LaLaHome.Tests\obj\Debug\net8.0\LaLaHome.Tests.AssemblyInfoInputs.cache
+C:\Users\admin\Downloads\LaLaHome-master\LaLaHome.Tests\obj\Debug\net8.0\LaLaHome.Tests.AssemblyInfo.cs
+C:\Users\admin\Downloads\LaLaHome-master\LaLaHome.Tests\obj\Debug\net8.0\LaLaHome.Tests.csproj.CoreCompileInputs.cache
+C:\Users\admin\Downloads\LaLaHome-master\LaLaHome.Tests\obj\Debug\net8.0\LaLaHome.Tests.sourcelink.json
