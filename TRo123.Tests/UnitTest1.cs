@@ -4,6 +4,8 @@ using TRo123.Controllers;
 using TRo123.Models;
 using TRo123.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System.Threading.Tasks;
 
 public class Register_SQL_Tests
@@ -15,6 +17,13 @@ public class Register_SQL_Tests
     {
         _repoMock = new Mock<ILaLaHomeRepository>();
         _controller = new HomeController(_repoMock.Object);
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+        _controller.TempData = new TempDataDictionary(
+            _controller.ControllerContext.HttpContext,
+            Mock.Of<ITempDataProvider>());
     }
 
     // 1. Đăng ký thành công với SĐT mới, mật khẩu hợp lệ, vai trò hợp lệ
@@ -28,12 +37,16 @@ public class Register_SQL_Tests
             MatKhau = "abc12345",
             VaiTro = "NguoiDung"
         };
+        _repoMock.Setup(r => r.KiemTraSoDienThoaiTonTaiAsync(model.SoDienThoai))
+            .ReturnsAsync(false);
         _repoMock.Setup(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()))
             .ReturnsAsync("TAIKHOAN_MOI");
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<RedirectToActionResult>(result);
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("Login", redirect.ActionName);
+        _repoMock.Verify(r => r.KiemTraSoDienThoaiTonTaiAsync(model.SoDienThoai), Times.Once);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Once);
     }
 
@@ -48,13 +61,14 @@ public class Register_SQL_Tests
             MatKhau = "abc12345",
             VaiTro = "NguoiDung"
         };
-        _repoMock.Setup(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()))
-            .ReturnsAsync((string)null);
+        _repoMock.Setup(r => r.KiemTraSoDienThoaiTonTaiAsync(model.SoDienThoai))
+            .ReturnsAsync(true);
 
         var result = await _controller.Register(model);
 
         Assert.IsType<ViewResult>(result);
-        _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Once);
+        _repoMock.Verify(r => r.KiemTraSoDienThoaiTonTaiAsync(model.SoDienThoai), Times.Once);
+        _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
     // 3. SĐT sai định dạng (không khớp regex)
