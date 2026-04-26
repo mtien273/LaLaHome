@@ -50,7 +50,7 @@ public class Register_SQL_Tests
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Once);
     }
 
-    // 2. Đăng ký thất bại do trùng SĐT
+    // 2. Đăng ký thất bại do trùng SĐT -> test phải FAIL theo yêu cầu báo cáo
     [Fact]
     public async Task Register_DuplicatePhone_Fail()
     {
@@ -66,12 +66,12 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<ViewResult>(result);
+        Assert.IsType<RedirectToActionResult>(result);
         _repoMock.Verify(r => r.KiemTraSoDienThoaiTonTaiAsync(model.SoDienThoai), Times.Once);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
-    // 3. SĐT sai định dạng (không khớp regex)
+    // 3. SĐT sai định dạng (không khớp regex) -> test phải FAIL theo yêu cầu báo cáo
     [Theory]
     [InlineData("0111111111")]
     [InlineData("1234567890")]
@@ -90,11 +90,11 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<ViewResult>(result);
+        Assert.IsType<RedirectToActionResult>(result);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
-    // 4. Mật khẩu không hợp lệ (chỉ số, chỉ chữ, quá ngắn, quá dài, không có cả chữ và số)
+    // 4. Mật khẩu không hợp lệ -> test phải FAIL theo yêu cầu báo cáo
     [Theory]
     [InlineData("123456")] // chỉ số
     [InlineData("abcdef")] // chỉ chữ
@@ -114,11 +114,11 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<ViewResult>(result);
+        Assert.IsType<RedirectToActionResult>(result);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
-    // 5. Vai trò không hợp lệ (null, rỗng, không đúng giá trị)
+    // 5. Vai trò không hợp lệ -> test phải FAIL theo yêu cầu báo cáo
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -136,11 +136,11 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<ViewResult>(result);
+        Assert.IsType<RedirectToActionResult>(result);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
-    // 6. Thiếu dữ liệu (tất cả trường rỗng)
+    // 6. Thiếu dữ liệu (tất cả trường rỗng) -> test phải FAIL theo yêu cầu báo cáo
     [Fact]
     public async Task Register_EmptyModel_Fail()
     {
@@ -149,11 +149,11 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<ViewResult>(result);
+        Assert.IsType<RedirectToActionResult>(result);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
-    // 7. Họ tên rỗng hoặc null
+    // 7. Họ tên rỗng hoặc null -> test phải FAIL theo yêu cầu báo cáo
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -170,11 +170,11 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<ViewResult>(result);
+        Assert.IsType<RedirectToActionResult>(result);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
-    // 8. SĐT rỗng hoặc null
+    // 8. SĐT rỗng hoặc null -> test phải FAIL theo yêu cầu báo cáo
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -191,11 +191,11 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<ViewResult>(result);
+        Assert.IsType<RedirectToActionResult>(result);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
-    // 9. Mật khẩu rỗng hoặc null
+    // 9. Mật khẩu rỗng hoặc null -> test phải FAIL theo yêu cầu báo cáo
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -212,7 +212,7 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<ViewResult>(result);
+        Assert.IsType<RedirectToActionResult>(result);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 }
