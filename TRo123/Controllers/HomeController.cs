@@ -116,6 +116,7 @@ namespace TRo123.Controllers
             }
 
             model.MaTaiKhoan = CurrentUserId;
+            model.SoDienThoai = model.SoDienThoai?.Trim() ?? string.Empty;
             if (!ModelState.IsValid)
             {
                 await LoadDanhMucAsync(model.MaTinhThanhPho, model.MaQuanHuyen);
@@ -127,7 +128,7 @@ namespace TRo123.Controllers
                 var laAnhTheoMime = !string.IsNullOrWhiteSpace(anhPhong.ContentType)
                     && anhPhong.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
                 var laAnhTheoExt = AllowedImageExtensions.Contains(ext);
-                if (!laAnhTheoMime && !laAnhTheoExt)
+                if (!laAnhTheoMime || !laAnhTheoExt)
                 {
                     ModelState.AddModelError("anhPhong", "File đã chọn không phải ảnh hợp lệ.");
                 }
@@ -347,6 +348,7 @@ namespace TRo123.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            model.SoDienThoai = model.SoDienThoai?.Trim() ?? string.Empty;
             if (!ModelState.IsValid)
             {
                 await LoadDanhMucAsync(model.MaTinhThanhPho, model.MaQuanHuyen);

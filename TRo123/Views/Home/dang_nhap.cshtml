@@ -9,7 +9,7 @@
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
         <label class="form-label">Số điện thoại</label>
-        <input class="form-control mb-1" asp-for="SoDienThoai" placeholder="Nhập số điện thoại" />
+        <input class="form-control mb-1" asp-for="SoDienThoai" type="tel" pattern="^(0|\+84)\d{9,10}$" placeholder="Nhập số điện thoại" />
         <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
         <label class="form-label">Mật khẩu</label>
         <input type="password" class="form-control mb-1" asp-for="MatKhau" placeholder="Nhập mật khẩu" />

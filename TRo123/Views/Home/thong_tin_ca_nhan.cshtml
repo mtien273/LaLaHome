@@ -20,7 +20,7 @@
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Số điện thoại</label>
                     <div class="col-md-7">
-                        <input class="form-control" asp-for="SoDienThoai" />
+                        <input class="form-control" asp-for="SoDienThoai" type="tel" pattern="^(0|\+84)\d{9,10}$" />
                         <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
                     </div>
                 </div>

@@ -12,7 +12,7 @@ public class CapNhatTaiKhoanViewModel
     public string HoTen { get; set; } = string.Empty;
 
     [Required]
-    [StringLength(10, MinimumLength = 10, ErrorMessage = "Số điện thoại phải đủ 10 số")]
+    [RegularExpression(@"^(0|\+84)\d{9,10}$", ErrorMessage = "Số điện thoại không hợp lệ (ví dụ: 09xxxxxxxx hoặc +84xxxxxxxxx).")]
     public string SoDienThoai { get; set; } = string.Empty;
 
     [StringLength(12, MinimumLength = 6, ErrorMessage = "Mật khẩu từ 6 đến 12 ký tự")]

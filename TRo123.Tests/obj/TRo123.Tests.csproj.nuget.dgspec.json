@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\TRo123\\TRo123.Tests\\TRo123.Tests.csproj": {}
+    "D:\\LaLaHome_G08\\TRo123.Tests\\TRo123.Tests.csproj": {}
   },
   "projects": {
-    "D:\\TRo123\\TRo123.Tests\\TRo123.Tests.csproj": {
+    "D:\\LaLaHome_G08\\TRo123.Tests\\TRo123.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\TRo123\\TRo123.Tests\\TRo123.Tests.csproj",
+        "projectUniqueName": "D:\\LaLaHome_G08\\TRo123.Tests\\TRo123.Tests.csproj",
         "projectName": "TRo123.Tests",
-        "projectPath": "D:\\TRo123\\TRo123.Tests\\TRo123.Tests.csproj",
+        "projectPath": "D:\\LaLaHome_G08\\TRo123.Tests\\TRo123.Tests.csproj",
         "packagesPath": "C:\\Users\\Mavan\\.nuget\\packages\\",
-        "outputPath": "D:\\TRo123\\TRo123.Tests\\obj\\",
+        "outputPath": "D:\\LaLaHome_G08\\TRo123.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -30,10 +30,11 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\TRo123\\TRo123\\TRo123.csproj": {
-                "projectPath": "D:\\TRo123\\TRo123\\TRo123.csproj"
+              "D:\\LaLaHome_G08\\TRo123\\TRo123.csproj": {
+                "projectPath": "D:\\LaLaHome_G08\\TRo123\\TRo123.csproj"
               }
             }
           }
@@ -52,6 +53,7 @@
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.AspNetCore.Http": {
@@ -375,14 +377,14 @@
         }
       }
     },
-    "D:\\TRo123\\TRo123\\TRo123.csproj": {
+    "D:\\LaLaHome_G08\\TRo123\\TRo123.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\TRo123\\TRo123\\TRo123.csproj",
+        "projectUniqueName": "D:\\LaLaHome_G08\\TRo123\\TRo123.csproj",
         "projectName": "TRo123",
-        "projectPath": "D:\\TRo123\\TRo123\\TRo123.csproj",
+        "projectPath": "D:\\LaLaHome_G08\\TRo123\\TRo123.csproj",
         "packagesPath": "C:\\Users\\Mavan\\.nuget\\packages\\",
-        "outputPath": "D:\\TRo123\\TRo123\\obj\\",
+        "outputPath": "D:\\LaLaHome_G08\\TRo123\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -401,6 +403,7 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -419,6 +422,7 @@
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.Data.SqlClient": {
