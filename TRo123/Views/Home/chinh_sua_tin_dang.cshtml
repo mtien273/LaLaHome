@@ -21,9 +21,7 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
                 <input type="hidden" asp-for="MaPhong" />
                 <h3 class="section-head">Địa chỉ cho thuê</h3>
-                <div class="row g-3 align-items-start">
-                    <div class="col-lg-8">
-                        <div class="row g-3">
+                <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label">Tỉnh/Thành phố</label>
                                 <select class="form-select" asp-for="MaTinhThanhPho" id="selTinh">
@@ -60,9 +58,6 @@
                                 <label class="form-label">Địa chỉ cụ thể</label>
                                 <input class="form-control" asp-for="DiaChiChiTiet" />
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4"><div class="map-box">Bản đồ vị trí</div></div>
                 </div>
 
                 <h3 class="section-head mt-4">Thông tin mô tả</h3>

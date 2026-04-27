@@ -279,8 +279,15 @@ namespace TRo123.Controllers
             }
 
             model.MaTaiKhoan = CurrentUserId;
+            model.SoDienThoai = model.SoDienThoai?.Trim() ?? string.Empty;
             if (!ModelState.IsValid)
             {
+                return View("thong_tin_ca_nhan", model);
+            }
+
+            if (await repository.KiemTraSoDienThoaiTonTaiKhacAsync(model.SoDienThoai, model.MaTaiKhoan))
+            {
+                ModelState.AddModelError(nameof(model.SoDienThoai), "Số điện thoại đã được sử dụng.");
                 return View("thong_tin_ca_nhan", model);
             }
 
@@ -506,8 +513,15 @@ namespace TRo123.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            model.SoDienThoai = model.SoDienThoai?.Trim() ?? string.Empty;
             if (!ModelState.IsValid)
             {
+                return View("cap_nhat_tai_khoan_nguoi_dung", model);
+            }
+
+            if (await repository.KiemTraSoDienThoaiTonTaiKhacAsync(model.SoDienThoai, model.MaTaiKhoan))
+            {
+                ModelState.AddModelError(nameof(model.SoDienThoai), "Số điện thoại đã được sử dụng.");
                 return View("cap_nhat_tai_khoan_nguoi_dung", model);
             }
 

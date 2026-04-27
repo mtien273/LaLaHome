@@ -66,7 +66,8 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<RedirectToActionResult>(result);
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("dang_ky", view.ViewName);
         _repoMock.Verify(r => r.KiemTraSoDienThoaiTonTaiAsync(model.SoDienThoai), Times.Once);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
@@ -90,7 +91,8 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<RedirectToActionResult>(result);
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("dang_ky", view.ViewName);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
@@ -114,7 +116,8 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<RedirectToActionResult>(result);
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("dang_ky", view.ViewName);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
@@ -136,7 +139,8 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<RedirectToActionResult>(result);
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("dang_ky", view.ViewName);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
@@ -149,7 +153,8 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<RedirectToActionResult>(result);
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("dang_ky", view.ViewName);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
@@ -170,7 +175,8 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<RedirectToActionResult>(result);
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("dang_ky", view.ViewName);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
@@ -191,7 +197,8 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<RedirectToActionResult>(result);
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("dang_ky", view.ViewName);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 
@@ -212,7 +219,8 @@ public class Register_SQL_Tests
 
         var result = await _controller.Register(model);
 
-        Assert.IsType<RedirectToActionResult>(result);
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("dang_ky", view.ViewName);
         _repoMock.Verify(r => r.TaoTaiKhoanAsync(It.IsAny<DangKyTaiKhoanViewModel>()), Times.Never);
     }
 }

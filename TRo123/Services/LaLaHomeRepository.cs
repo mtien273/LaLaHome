@@ -262,6 +262,24 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         return result is not null;
     }
 
+    public async Task<bool> KiemTraSoDienThoaiTonTaiKhacAsync(string soDienThoai, string maTaiKhoan)
+    {
+        const string sql = """
+            SELECT TOP 1 1
+            FROM tblTaiKhoan
+            WHERE LTRIM(RTRIM(sSDT)) = @SoDienThoai
+              AND PK_MaTaiKhoan <> @MaTaiKhoan;
+            """;
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@SoDienThoai", soDienThoai);
+        cmd.Parameters.AddWithValue("@MaTaiKhoan", maTaiKhoan);
+        var result = await cmd.ExecuteScalarAsync();
+        return result is not null;
+    }
+
     public async Task<bool> KiemTraDangNhapAsync(DangNhapViewModel model)
     {
         return await LayTaiKhoanTheoDangNhapAsync(model) is not null;
@@ -327,6 +345,7 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         const string sql = """
             UPDATE tblTaiKhoan
             SET sHoTen = @HoTen,
+                sSDT = @SoDienThoai,
                 sMatKhau = COALESCE(NULLIF(@MatKhauMoi, N''), sMatKhau)
             WHERE PK_MaTaiKhoan = @MaTaiKhoan;
             """;
@@ -336,6 +355,7 @@ public class LaLaHomeRepository(IConfiguration configuration) : ILaLaHomeReposit
         await using var cmd = new SqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@MaTaiKhoan", model.MaTaiKhoan);
         cmd.Parameters.AddWithValue("@HoTen", model.HoTen);
+        cmd.Parameters.AddWithValue("@SoDienThoai", model.SoDienThoai);
         cmd.Parameters.AddWithValue("@MatKhauMoi", (object?)model.MatKhauMoi ?? DBNull.Value);
         await cmd.ExecuteNonQueryAsync();
     }
